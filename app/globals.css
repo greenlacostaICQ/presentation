@@ -1459,3 +1459,466 @@ button:focus-visible, select:focus-visible, a:focus-visible {
   .gate-layout { grid-template-columns: 1fr; }
   .gate-bar { width: 100% !important; }
 }
+
+/* ==========================================================================
+   Этап 3 · единая визуальная система
+   Структура и число экранов не меняются. Низкие окна прокручиваются, поэтому
+   рабочий текст больше не уменьшается ради искусственного «влезания».
+   ========================================================================== */
+
+:root {
+  --active: #236789;
+  --active-dark: #174b66;
+  --active-soft: #eaf5fb;
+  --success-soft: #edf8f3;
+  --warning-soft: #fdf7e9;
+  --danger-soft: #fff0f3;
+  --radius-control: 12px;
+}
+
+/* Программный фокус остаётся для скринридера, но учебный заголовок не
+   притворяется интерактивным control после перехода из содержания. */
+[data-slide-focus]:focus,
+[data-slide-focus]:focus-visible {
+  outline: none;
+}
+
+.content-layout,
+.cover-layout,
+.final-layout {
+  width: min(1600px, 100%);
+}
+
+.slide-heading {
+  max-width: 1280px;
+  margin-bottom: clamp(22px, 2.6vh, 34px);
+}
+
+.slide-heading h1 {
+  font-size: clamp(38px, 3vw, 56px);
+  line-height: 1.04;
+}
+
+.slide-intro {
+  max-width: 1080px;
+  font-size: clamp(18px, 1.25vw, 21px);
+  line-height: 1.5;
+}
+
+.eyebrow,
+.question-label,
+.outcomes-label,
+.checks-label,
+.gate-tag,
+.source-quote b {
+  font-size: 13px;
+}
+
+/* Controls: действие, вкладка, выбор и ссылка визуально различаются, но у
+   каждого типа стабильные размер, радиус и состояние. */
+.primary-action,
+.secondary-action,
+.assembled-prompt button,
+.assistant-answer-card > footer button,
+.report-card footer button,
+.case-special-actions button,
+.prompt-card button,
+.practice-actions > a,
+.practice-links a,
+.service-links a,
+.zone-choice {
+  min-height: 48px;
+  padding: 0 24px;
+  font-size: 16px;
+}
+
+.panel-tab,
+.level-tab,
+.formula-tabs button,
+.situation-strip button,
+.gateway-groups button,
+.category-buttons button,
+.choice,
+.select-card,
+.answer-review button,
+.refinement-option,
+.report-rows button,
+.case-fragments button,
+.part-options button,
+.builder-zone,
+.gate-bar {
+  min-height: 48px;
+  border-radius: var(--radius-control);
+  font-size: 16px;
+}
+
+.panel-tab,
+.level-tab {
+  min-height: 64px;
+}
+
+.level-quiz-list select,
+.case-part-list select,
+.practice-reflection select,
+.final-actions select,
+.final-actions input {
+  min-height: 48px;
+  height: auto;
+  font-size: 15px;
+}
+
+/* Active/selected = blue, completed = green, warning = amber,
+   incorrect/danger = red. Brand red is reserved for the main CTA. */
+.panel-tab.active,
+.level-tab.active,
+.formula-tabs button.active,
+.service-card.active,
+.global-service.active,
+.gateway-groups button.active,
+.situation-strip button.active,
+.cause-wheel button.active,
+.gate-bar.active,
+.choice.selected,
+.select-card.selected,
+.report-rows button.selected,
+.answer-review button.selected,
+.part-options button.on,
+[aria-pressed="true"] {
+  border-color: var(--active);
+  box-shadow: 0 0 0 3px rgba(35, 103, 137, .18);
+}
+
+.panel-tab.active,
+.level-tab.active,
+.gateway-groups button.active,
+.cause-wheel button.active,
+.gate-bar.active,
+.part-options button.on {
+  background: var(--active-dark);
+  color: white;
+}
+
+.level-tab.active > span,
+.route-stop.active span,
+.case-route .active {
+  border-color: var(--active);
+  background: var(--active);
+  color: white;
+  box-shadow: 0 0 0 5px rgba(35, 103, 137, .16);
+}
+
+.formula-tabs button.active,
+.choice.selected,
+.select-card.selected,
+.report-rows button.selected,
+.answer-review button.selected {
+  background: var(--active-soft);
+  color: var(--sinara-navy);
+}
+
+.panel-tab:has(i),
+.level-tab:has(i),
+.route-stop:has(i),
+.formula-tabs button.visited,
+.situation-strip button.visited,
+.gateway-groups button.visited,
+.gate-bar.passed {
+  border-color: rgba(24, 122, 92, .55);
+}
+
+.feedback.correct,
+.inline-feedback.correct,
+.result-banner.success,
+.completion-message,
+.copy-status,
+.report-rows button.correct,
+.answer-review button.correct,
+.refinement-option.correct,
+.builder-zone.correct,
+.builder-zone.filled,
+.part-options button.right {
+  border-color: rgba(24, 122, 92, .5);
+  background: var(--success-soft);
+  color: #176c52;
+}
+
+.feedback.wrong,
+.inline-feedback.wrong,
+.result-banner.retry,
+.report-rows button.wrong,
+.answer-review button.wrong,
+.refinement-option.wrong,
+.builder-zone.wrong,
+.part-options button.wrong {
+  border-color: rgba(186, 24, 51, .48);
+  background: var(--danger-soft);
+  color: #9d1730;
+}
+
+.practice-warning,
+.final-score.pending,
+.eyebrow.pending {
+  border-color: rgba(165, 103, 0, .42);
+  background: var(--warning-soft);
+  color: #7a5000;
+}
+
+button:disabled,
+select:disabled,
+.menu-slide.locked {
+  cursor: not-allowed;
+}
+
+/* Рабочая типографика. Мелкими остаются только служебные индексы и labels. */
+.panel-tab,
+.route-stop b,
+.route-detail span,
+.level-tab b,
+.level-sections p,
+.level-sections li,
+.safety-columns p,
+.situation-result p,
+.cause-wheel button,
+.formula-tabs button,
+.formula-detail span,
+.formula-detail blockquote,
+.assembled-prompt p,
+.service-card p,
+.global-service p,
+.gateway-detail li,
+.gateway-carry,
+.question-card,
+.choice,
+.select-card p,
+.active-card h2,
+.category-buttons button,
+.practice-steps p,
+.prompt-card pre,
+.case-part-list p,
+.case-fragments button,
+.rules-list p,
+.outcomes li,
+.time-chart article p,
+.report-task,
+.report-rows button p,
+.source-quote p,
+.zone-instruction,
+.zone-choice,
+.zone-feedback p,
+.answer-review button p,
+.refinement-option p,
+.builder-zone p,
+.builder-feedback p,
+.gate-lead,
+.gate-no p,
+.gate-rule {
+  font-size: 16px;
+}
+
+.feedback,
+.inline-feedback,
+.result-banner,
+.confidence-feedback,
+.copy-status,
+.practice-warning,
+.practice-return p,
+.practice-reflection label,
+.practice-conclusion p,
+.practice-done p,
+.builder-result p,
+.panel-conclusion p {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.global-service b,
+.service-example,
+.service-example p,
+.select-card small,
+.report-rows small,
+.answer-review button small,
+.refinement-option small,
+.builder-result small,
+.case-special-actions p,
+.final-avatar p,
+.gateway-shot figcaption {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.service-card,
+.global-service {
+  min-height: 220px;
+  padding: 28px;
+  cursor: default;
+}
+
+.service-card {
+  cursor: pointer;
+}
+
+.service-card h2,
+.global-service h2 {
+  margin-top: 18px;
+  font-size: 27px;
+}
+
+.service-table {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 14px 35px rgba(19, 33, 49, .07);
+}
+
+.service-table > header,
+.service-table > div {
+  min-height: 62px;
+  padding: 14px 20px;
+  font-size: 16px;
+}
+
+.service-review {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-top: 14px;
+  padding: 13px 16px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .78);
+}
+
+.service-review-dates {
+  display: grid;
+  gap: 3px;
+  font-size: 13px;
+}
+
+.service-review-dates span {
+  color: var(--muted);
+}
+
+.service-review-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-review-sources > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.service-review-sources a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  color: var(--active-dark);
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.service-review-sources a:hover {
+  border-color: var(--active);
+  background: var(--active-soft);
+}
+
+.key-note {
+  max-width: 1280px;
+}
+
+.key-note p {
+  font-size: 15px;
+}
+
+/* Wide desktop: растёт рабочая сетка и карточки, а не только заголовок. */
+@media (min-width: 1500px) and (min-height: 850px) {
+  .stage {
+    padding-right: clamp(64px, 4.5vw, 86px);
+    padding-left: clamp(64px, 4.5vw, 86px);
+  }
+
+  .panel-workspace,
+  .levels-layout,
+  .cause-layout,
+  .gate-layout,
+  .practice-grid,
+  .gateway-layout {
+    gap: 28px;
+  }
+
+  .panel-detail {
+    min-height: 400px;
+  }
+
+  .safety-columns section,
+  .service-card,
+  .global-service,
+  .question-card,
+  .case-card {
+    padding: 30px 34px;
+  }
+
+  .cause-wheel {
+    min-height: 390px;
+  }
+
+  .formula-detail {
+    min-height: 205px;
+    padding: 28px 32px;
+  }
+
+  .zone-practice,
+  .builder-current,
+  .active-card {
+    padding: 24px 28px;
+  }
+
+  .prompt-card {
+    min-height: 330px;
+    padding: 26px;
+  }
+
+  .gateway-frame {
+    min-height: 360px;
+  }
+}
+
+@media (min-width: 761px) and (max-height: 900px) {
+  /* Предыдущие compact-правила уменьшали текст до 11–13 px. Теперь при
+     нехватке высоты работает scroll, а размер остаётся учебным. */
+  .slide-heading h1 { font-size: clamp(34px, 3vw, 48px); }
+  .slide-intro { font-size: 17px; }
+  .outcomes li,
+  .report-rows button p,
+  .gateway-detail li,
+  .gateway-carry,
+  .rules-list p,
+  .confidence-quiz .choice,
+  .confidence-quiz .source-quote p { font-size: 15px; }
+  .gateway-groups button,
+  .choice-list.compact .choice { min-height: 48px; font-size: 15px; }
+}
+
+@media (max-width: 760px) {
+  .primary-action,
+  .secondary-action,
+  .service-links a,
+  .practice-links a { width: 100%; white-space: normal; text-align: center; }
+  .service-pair,
+  .service-trio { grid-template-columns: 1fr; }
+  .service-review { align-items: stretch; flex-direction: column; }
+  .service-review-sources { display: grid; grid-template-columns: 1fr 1fr; }
+  .service-review-sources > span { grid-column: 1 / -1; }
+  .service-card,
+  .global-service { min-height: 0; padding: 22px; }
+}
