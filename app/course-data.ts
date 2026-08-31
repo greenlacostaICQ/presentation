@@ -61,11 +61,6 @@ export type Slide = {
   visual?: 'avatar' | 'network' | 'comparison' | 'formula' | 'answer-flow';
   caseSteps?: CaseStep[];
   levelQuiz?: LevelQuizItem[];
-  serviceReview?: {
-    checkedAt: string;
-    nextReview: string;
-    sources: Array<{ label: string; url: string }>;
-  };
 };
 
 export const chapters = [
@@ -456,14 +451,6 @@ export const slides: Slide[] = [
       { title: 'Алиса AI · Яндекс', body: 'Быстрые объяснения, короткие справки, поиск, голос и разбор изображений.', example: 'Подходит: объяснить термин. Внимательнее: сложные расчёты и длинные инструкции.' },
     ],
     note: 'Публичная доступность не означает разрешения загружать рабочие материалы банка.',
-    serviceReview: {
-      checkedAt: '31 августа 2026',
-      nextReview: 'до 30 ноября 2026 и после крупных обновлений',
-      sources: [
-        { label: 'GigaChat', url: 'https://developers.sber.ru/docs/ru/gigachat/guides/main' },
-        { label: 'Алиса AI', url: 'https://alice.yandex.ru/aliceapp' },
-      ],
-    },
   },
   {
     id: 21,
@@ -484,16 +471,6 @@ export const slides: Slide[] = [
       { label: 'Стоимость подписки', feedback: 'Цена важна только после проверки доступа и допустимости данных.' },
     ],
     note: 'Публичный сервис и модель, развёрнутая внутри организации, — разные каналы.',
-    serviceReview: {
-      checkedAt: '31 августа 2026',
-      nextReview: 'до 30 ноября 2026 и после крупных обновлений',
-      sources: [
-        { label: 'DeepSeek', url: 'https://api-docs.deepseek.com/' },
-        { label: 'Qwen', url: 'https://qwenlm.ai/' },
-        { label: 'Kimi', url: 'https://www.kimi.com/en/help/new-user-guide/overview' },
-        { label: 'GLM', url: 'https://docs.z.ai/' },
-      ],
-    },
   },
   {
     id: 22,
@@ -507,15 +484,6 @@ export const slides: Slide[] = [
       { title: 'Gemini · Google и мультимодальность', body: 'Текст, изображения, аудио и видео с интеграцией в экосистему Google.', example: 'Выбирают, когда информация уже живёт в Google.' },
     ],
     note: 'Обычный пользовательский доступ из России официально не поддерживается. Следуйте правилам банка.',
-    serviceReview: {
-      checkedAt: '31 августа 2026',
-      nextReview: 'до 30 ноября 2026 и после крупных обновлений',
-      sources: [
-        { label: 'ChatGPT', url: 'https://help.openai.com/en/articles/9260256-chatgpt-capabilities-overview' },
-        { label: 'Claude', url: 'https://www.anthropic.com/claude' },
-        { label: 'Gemini', url: 'https://gemini.google/overview/' },
-      ],
-    },
   },
   {
     id: 24,

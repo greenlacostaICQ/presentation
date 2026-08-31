@@ -573,23 +573,6 @@ function Note({ text }: { text?: string }) {
   return text ? <aside className="key-note"><span>!</span><p>{text}</p></aside> : null;
 }
 
-function ServiceReview({ slide }: { slide: Slide }) {
-  const review = slide.serviceReview;
-  if (!review) return null;
-  return (
-    <aside className="service-review" aria-label="Актуальность сравнения сервисов">
-      <div className="service-review-dates">
-        <b>Проверено: {review.checkedAt}</b>
-        <span>Следующий пересмотр: {review.nextReview}</span>
-      </div>
-      <div className="service-review-sources">
-        <span>Официальные источники</span>
-        {review.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label}</a>)}
-      </div>
-    </aside>
-  );
-}
-
 function CoverSlide(props: SlideViewProps) {
   return (
     <div className="cover-layout">
@@ -809,17 +792,13 @@ function RussianServicesSlide(props: SlideViewProps) {
   return <div className="content-layout"><SlideHeading slide={props.slide} />
     <div className="service-pair">{props.slide.panels?.map((item, idx) => <button type="button" key={item.title} className={idx === props.activePanel ? 'service-card active' : 'service-card'} onClick={() => props.onPanel(idx)}><span>{idx === 0 ? 'G' : 'A'}</span><h2>{item.title}</h2><p>{item.body}</p></button>)}</div>
     <div className="service-example"><b>{panel?.title}</b><p>{panel?.example}</p></div>
-    <div className="service-links"><a href="https://giga.chat" target="_blank" rel="noreferrer">Открыть GigaChat</a><a href="https://alice.yandex.ru" target="_blank" rel="noreferrer">Открыть Алису</a></div>
-    <ServiceReview slide={props.slide} />
-    <Note text={props.slide.note} />
+    <div className="service-links"><a href="https://giga.chat" target="_blank" rel="noreferrer">Открыть GigaChat</a><a href="https://alice.yandex.ru" target="_blank" rel="noreferrer">Открыть Алису</a></div><Note text={props.slide.note} />
   </div>;
 }
 
 function GlobalServicesSlide(props: SlideViewProps) {
   return <div className="content-layout"><SlideHeading slide={props.slide} />
-    <div className="service-trio">{props.slide.panels?.map((item) => { const [name,focus] = item.title.split(' · '); return <article key={item.title} className="global-service"><small>{focus}</small><h2>{name}</h2><p>{item.body}</p><b>{item.example}</b></article>; })}</div>
-    <ServiceReview slide={props.slide} />
-    <Note text={props.slide.note} />
+    <div className="service-trio">{props.slide.panels?.map((item) => { const [name,focus] = item.title.split(' · '); return <article key={item.title} className="global-service"><small>{focus}</small><h2>{name}</h2><p>{item.body}</p><b>{item.example}</b></article>; })}</div><Note text={props.slide.note} />
   </div>;
 }
 
@@ -1243,7 +1222,7 @@ function ServiceCriteriaSlide(props: SlideViewProps) {
 
 function ChineseServicesSlide(props: SlideViewProps) {
   const rows=[['DeepSeek','Логика, технические задачи и код','Рассуждение и код'],['Qwen','Текст, изображения, аудио и видео','Мультимодальность'],['Kimi','Исследование, таблица, документ или презентация','Офисные материалы'],['GLM','Большой материал и длинная многошаговая задача','Глубокий анализ']];
-  return <div className="content-layout"><SlideHeading slide={props.slide}/><div className="service-table"><header><b>Сервис</b><b>Выбирают, когда нужно</b><b>Сильный фокус</b></header>{rows.map(row=><div key={row[0]}><b>{row[0]}</b><span>{row[1]}</span><span>{row[2]}</span></div>)}</div><ServiceReview slide={props.slide}/><div className="lesson-bottom"><Note text={props.slide.note}/><button className="primary-action" type="button" onClick={props.onOpenQuiz}>Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
+  return <div className="content-layout"><SlideHeading slide={props.slide}/><div className="service-table"><header><b>Сервис</b><b>Выбирают, когда нужно</b><b>Сильный фокус</b></header>{rows.map(row=><div key={row[0]}><b>{row[0]}</b><span>{row[1]}</span><span>{row[2]}</span></div>)}</div><div className="lesson-bottom"><Note text={props.slide.note}/><button className="primary-action" type="button" onClick={props.onOpenQuiz}>Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
 }
 
 function MultiSlide(props: SlideViewProps) {
