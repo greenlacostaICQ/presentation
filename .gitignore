@@ -21,7 +21,6 @@
 *.pem
 *.tsbuildinfo
 /.claude/
-/.openai/
 /public/audio/_removed/
 
 # debug
