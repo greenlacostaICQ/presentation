@@ -303,7 +303,7 @@ export default function Home() {
       }
       setCopyState(`${label} ✓ Вставьте текст в разрешённый сервис.`);
     } catch {
-      setCopyState('Не удалось скопировать — выделите текст вручную');
+      setCopyState('Не удалось скопировать, выделите текст вручную');
     }
   };
 
@@ -323,7 +323,7 @@ export default function Home() {
         <BrandLogo />
         <p className="chapter-name">{currentChapter}</p>
         <div className="header-actions">
-          <button className={captions ? 'icon-button active' : 'icon-button'} type="button" onClick={() => setCaptions((value) => !value)} aria-label="Показать или скрыть текст озвучки">
+          <button className={captions ? 'icon-button active' : 'icon-button'} type="button" disabled={!slide.voice} onClick={() => setCaptions((value) => !value)} aria-label="Показать или скрыть текст озвучки">
             <Icon name="captions" />
           </button>
           <span className="slide-number"><b>{String(index + 1).padStart(2, '0')}</b> / {slides.length}</span>
@@ -427,7 +427,7 @@ export default function Home() {
 
         {copyState && <div className="copy-toast" role="status">{copyState}</div>}
 
-        {captions && <div className="captions" role="status" ref={captionsRef}>{slide.voice}</div>}
+        {captions && slide.voice && <div className="captions" role="status" ref={captionsRef}>{slide.voice}</div>}
       </section>
 
       <footer className={overlayOpen ? 'course-controls is-blocked' : 'course-controls'} aria-hidden={overlayOpen}>
@@ -437,7 +437,7 @@ export default function Home() {
         <button className="play-control" type="button" onClick={toggleMedia} disabled={slide.hasAudio === false || overlayOpen} tabIndex={overlayOpen ? -1 : undefined} aria-label={isPlaying ? 'Поставить озвучку на паузу' : playedOnce ? 'Повторить озвучку' : 'Включить озвучку'}>
           <Icon name={isPlaying ? 'pause' : playedOnce ? 'repeat' : 'play'} />
         </button>
-        <div className="manual-hint">{nextBlocked ? 'Завершите действие на экране' : slide.hasAudio === false ? 'Текст экрана — на самом экране' : isPlaying ? 'Фраза звучит' : playedOnce ? 'Фраза закончилась — можно повторить' : 'Переход между экранами — вручную'}</div>
+        <div className="manual-hint">{nextBlocked ? 'Завершите действие на экране' : slide.hasAudio === false ? 'Текст экрана — на самом экране' : isPlaying ? 'Озвучка воспроизводится' : playedOnce ? 'Озвучка завершена' : 'Переключайте экраны стрелками'}</div>
         <button className="nav-button next-button" type="button" onClick={() => goTo(index + 1)} disabled={index === slides.length - 1 || nextBlocked || overlayOpen} tabIndex={overlayOpen ? -1 : undefined} aria-label="Следующий экран">
           <Icon name="next" />
         </button>
@@ -582,7 +582,7 @@ function CoverSlide(props: SlideViewProps) {
         <p className="cover-subtitle">{props.slide.intro}</p>
         <button className="primary-action" type="button" onClick={props.onStart}>
           <Icon name={props.isPlaying ? 'pause' : 'play'} />
-          {props.started ? (props.isPlaying ? 'Идёт заставка' : 'Повторить заставку') : 'Начать курс'}
+          {props.started ? (props.isPlaying ? 'Заставка воспроизводится' : 'Повторить заставку') : 'Начать курс'}
         </button>
         <p className="cover-note"><Icon name="sound" /> {props.slide.note}</p>
       </div>
@@ -655,7 +655,7 @@ function RouteSlide(props: SlideViewProps) {
     <section className="outcomes">
       <p className="outcomes-label">После курса вы сможете</p>
       <ul>{props.slide.outcomes?.map((item) => <li key={item}>{item}</li>)}</ul>
-      <b>В конце — итоговый кейс из пяти решений. Проходной результат — 4 из 5.</b>
+      <b>В конце итоговый кейс из пяти решений. Для зачёта нужно минимум четыре верных ответа и ни одной ошибки в трёх ключевых темах: подходит ли задача, какие данные, кто принимает решение.</b>
     </section>
     <div className="route-line">{props.slide.panels?.map((item, idx) => <button key={item.title} className={idx === props.activePanel ? 'route-stop active' : 'route-stop'} onClick={() => props.onPanel(idx)} type="button"><span>{idx + 1}</span><b>{item.title.replace(/^\d+\.\s*/, '')}</b></button>)}</div>
     <article className="route-detail"><p>Что будет на этом этапе</p><h2>{panel?.title}</h2><span>{panel?.body}</span></article>
@@ -670,6 +670,12 @@ function LevelsSlide(props: SlideViewProps) {
   const allAnswered = Object.keys(answers).length === (props.slide.levelQuiz?.length ?? 0);
   const correctAnswers = props.slide.levelQuiz?.filter((item, idx) => answers[idx] === item.answer).length ?? 0;
   const numerals = ['①', '②', '③', '④'];
+  const levelReasons: Record<string, string> = {
+    'Искусственный интеллект': 'Это искусственный интеллект: система не создаёт новый материал, а автоматически проверяет операцию по заданному правилу.',
+    'Генеративный ИИ': 'Это генеративный ИИ: система создаёт новый материал — изображение.',
+    'Языковая модель': 'Это языковая модель: основная работа — преобразование текста.',
+    'ИИ-ассистент': 'Это ИИ-ассистент: сервис использует языковую модель и приложенный файл.',
+  };
 
   useEffect(() => {
     if (allAnswered && correctAnswers === (props.slide.levelQuiz?.length ?? 0)) props.onComplete();
@@ -708,13 +714,13 @@ function LevelsSlide(props: SlideViewProps) {
       </article>
     </div>
     <div className="level-actions">
-      <p>{viewedAll ? 'Все четыре уровня просмотрены — теперь распределите рабочие ситуации.' : 'Сначала откройте все четыре уровня.'}</p>
+      <p>{viewedAll ? 'Все четыре уровня открыты. Теперь распределите рабочие ситуации.' : 'Откройте все четыре уровня, после этого появится проверка.'}</p>
       <button className="secondary-action" type="button" disabled={!viewedAll} onClick={props.onOpenQuiz}>Проверить себя</button>
     </div>
     {props.quizOpen && <div className="quiz-modal" role="dialog" aria-modal="true" aria-label="Определите уровень искусственного интеллекта">
       <button className="quiz-backdrop" type="button" onClick={props.onCloseQuiz} aria-label="Закрыть проверку" />
       <section className="quiz-dialog level-quiz-dialog">
-        <header><div><p className="question-label">Четыре ситуации</p><h2>Выберите подходящий уровень</h2></div><button type="button" onClick={props.onCloseQuiz} aria-label="Закрыть">×</button></header>
+        <header><div><p className="question-label">Четыре ситуации</p><h2>Определите, какая технология выполняет основную работу в каждой ситуации.</h2></div><button type="button" onClick={props.onCloseQuiz} aria-label="Закрыть">×</button></header>
         <div className="level-quiz-list">
           {props.slide.levelQuiz?.map((item, idx) => {
             const selected = answers[idx];
@@ -726,11 +732,11 @@ function LevelsSlide(props: SlideViewProps) {
                 <option value="" disabled>Выберите уровень</option>
                 {levelNames.map((name) => <option key={name} value={name}>{name}</option>)}
               </select>
-              {selected && <small>{correct ? 'Верно' : 'Выберите другой уровень'}</small>}
+              {selected && <small>{correct ? 'Верно' : levelReasons[item.answer]}</small>}
             </article>;
           })}
         </div>
-        {allAnswered && <div className={correctAnswers === props.slide.levelQuiz?.length ? 'result-banner success' : 'result-banner retry'}>{correctAnswers === props.slide.levelQuiz?.length ? 'Отлично: все четыре уровня определены верно.' : `Верных ответов: ${correctAnswers} из ${props.slide.levelQuiz?.length}. Исправьте отмеченные строки.`}</div>}
+        {allAnswered && <div className={correctAnswers === props.slide.levelQuiz?.length ? 'result-banner success' : 'result-banner retry'}>{correctAnswers === props.slide.levelQuiz?.length ? 'Верно. Вы различили искусственный интеллект, генеративный ИИ, языковую модель и ИИ-ассистента.' : `Правильно определено ${correctAnswers} из ${props.slide.levelQuiz?.length}. Посмотрите объяснения под ошибочными ответами и исправьте их.`}</div>}
       </section>
     </div>}
   </div>;
@@ -740,11 +746,11 @@ function SafetyDataSlide(props: SlideViewProps) {
   const panel = props.slide.panels?.[props.activePanel];
   return <div className="content-layout compact-content"><SlideHeading slide={props.slide} />
     <div className="safety-columns"><section><h2>Можно использовать</h2><p>План развития · структура презентации · список вопросов · объяснение термина · черновик без реквизитов · повестка встречи</p></section><section className="danger"><h2>Нельзя вводить в публичный сервис</h2><p>ФИО и контакты · счета и договоры · операции клиентов · кадровые сведения · внутренние документы · пароли и токены</p></section></div>
-    <StepProgress instruction="Откройте три ситуации — в каждой свой безопасный способ действия." visited={props.visitedPanels.length} total={props.slide.panels?.length ?? 0} doneText="Все три ситуации открыты." />
+    <StepProgress instruction="Разберите три ситуации и определите безопасный способ работы в каждой." visited={props.visitedPanels.length} total={props.slide.panels?.length ?? 0} doneText="Все три ситуации открыты." />
     <div className="situation-strip">{props.slide.panels?.map((item, idx) => <button type="button" key={item.title} className={idx === props.activePanel ? 'active' : props.visitedPanels.includes(idx) ? 'visited' : ''} onClick={() => props.onPanel(idx)}>{idx + 1}. {item.title}{props.visitedPanels.includes(idx) && <i aria-label="просмотрено"> ✓</i>}</button>)}</div>
     <article className={`situation-result tone-${panel?.tone ?? 'blue'}`}><b>{panel?.title}</b><p>{panel?.body}</p></article>
     {props.visitedPanels.length >= (props.slide.panels?.length ?? 0)
-      ? <section className="panel-conclusion"><b>Во всех трёх случаях менялась только тема</b><p>Рабочая тема — можно. Рабочие данные — нельзя. Правило по данным не зависит от того, насколько задача безобидна.</p></section>
+      ? <section className="panel-conclusion"><b>Во всех трёх ситуациях темы были разными</b><p>Правила работы с данными оставались одинаковыми. Публичному сервису можно описать тип задачи, но нельзя передавать реальные рабочие данные.</p></section>
       : <Note text={props.slide.note} />}
   </div>;
 }
@@ -754,7 +760,7 @@ function CauseWheelSlide(props: SlideViewProps) {
   const total = props.slide.panels?.length ?? 0;
   const allSeen = props.visitedPanels.length >= total;
   return <div className="content-layout"><SlideHeading slide={props.slide} />
-    <StepProgress instruction="Нажмите на четыре причины по очереди — у каждой своё исправление." visited={props.visitedPanels.length} total={total} doneText="Все четыре причины разобраны." />
+    <StepProgress instruction="Откройте четыре причины, чтобы понять, где возникла проблема и как её исправить." visited={props.visitedPanels.length} total={total} doneText="Все четыре причины разобраны." />
     <div className="cause-layout"><div className="cause-wheel"><strong>Почему результат<br/>оказался плохим?</strong>{props.slide.panels?.map((item, idx) => <button type="button" key={item.title} className={idx === props.activePanel ? 'active' : props.visitedPanels.includes(idx) ? 'visited' : ''} onClick={() => props.onPanel(idx)}>{idx + 1}. {item.title}{props.visitedPanels.includes(idx) && <i aria-label="просмотрено"> ✓</i>}</button>)}</div>
     {allSeen
       ? <article className="cause-detail cause-order"><p>Порядок разбора</p><h2>Проверяйте причины в этом порядке</h2><ol><li>Задача — названо ли конкретное действие и критерий результата</li><li>Контекст — дан ли материал и убрано ли лишнее</li><li>Инструмент — есть ли доступ и умеет ли он нужное</li><li>Проверка — сверили ли числа и ссылки перед передачей</li></ol><b>Первые две причины дают большинство плохих результатов. Начинайте с них.</b></article>
@@ -766,10 +772,10 @@ function FormulaSlide(props: SlideViewProps) {
   const panel = props.slide.panels?.[props.activePanel];
   const ready = props.visitedPanels.length === (props.slide.panels?.length ?? 0);
   return <div className="content-layout"><SlideHeading slide={props.slide} />
-    <StepProgress instruction="Откройте четыре части — после четвёртой появится собранный запрос." visited={props.visitedPanels.length} total={props.slide.panels?.length ?? 0} doneText="Четыре части открыты — запрос собран." />
+    <StepProgress instruction="Изучите четыре части и посмотрите, как из них складывается один рабочий запрос." visited={props.visitedPanels.length} total={props.slide.panels?.length ?? 0} doneText="Вы изучили все четыре части." />
     <div className="formula-tabs">{props.slide.panels?.map((item, idx) => <button type="button" key={item.title} className={`formula-${idx}${idx === props.activePanel ? ' active' : ''}${props.visitedPanels.includes(idx) ? ' visited' : ''}`} onClick={() => props.onPanel(idx)}>{item.title}{props.visitedPanels.includes(idx) && <i aria-label="просмотрено"> ✓</i>}</button>)}</div>
     <article className="formula-detail"><div><p>Часть запроса</p><h2>{panel?.title}</h2><span>{panel?.body}</span></div><blockquote>{panel?.example}</blockquote></article>
-    {ready ? <div className="assembled-prompt"><b>Четыре части вместе</b><p>Подготовь справку по указанным данным для руководителя. Формат: таблица и три коротких вывода. Проверь расчёты и не добавляй выводов без данных.</p><small>Это и есть готовый запрос. Где его набирать — разберём в главе про сервисы.</small></div> : <Note text="Откройте все четыре части — после этого появится собранный запрос." />}
+    {ready ? <div className="assembled-prompt"><b>Четыре части вместе</b><p>Подготовь справку по указанным данным для руководителя. Формат: таблица и три коротких вывода. Проверь расчёты и не добавляй выводов без данных.</p><small>Запрос готов, а где его набирать, разберём в главе про сервисы.</small></div> : <Note text="Откройте все четыре части — после этого появится собранный запрос." />}
   </div>;
 }
 
@@ -778,28 +784,49 @@ function ExtendedFormulaSlide(props: SlideViewProps) {
   const total = props.slide.panels?.length ?? 0;
   const allSeen = props.visitedPanels.length >= total;
   return <div className="content-layout"><SlideHeading slide={props.slide} />
-    <StepProgress instruction="Откройте шесть частей: четыре базовые и две надстройки для ответственной задачи." visited={props.visitedPanels.length} total={total} doneText="Все шесть частей открыты." />
+    <StepProgress instruction="Изучите четыре основные и две дополнительные части запроса." visited={props.visitedPanels.length} total={total} doneText="Все шесть частей открыты." />
     <div className="formula-tabs six">{props.slide.panels?.map((item, idx) => <button type="button" key={item.title} className={`${idx === props.activePanel ? 'active ' : ''}${props.visitedPanels.includes(idx) ? 'visited ' : ''}${idx > 3 ? 'extension' : ''}`} onClick={() => props.onPanel(idx)}>{item.title}{props.visitedPanels.includes(idx) && <i aria-label="просмотрено"> ✓</i>}</button>)}</div>
-    <article className="formula-detail extended"><div><p>{props.activePanel < 4 ? 'Базовая формула' : 'Надстройка для ответственной задачи'}</p><h2>{panel?.title}</h2><span>{panel?.body}</span></div>{panel?.example && <blockquote>{panel.example}</blockquote>}</article>
+    <article className="formula-detail extended"><div><p>{props.activePanel < 4 ? 'Базовая формула' : 'Дополнительная часть запроса'}</p><h2>{panel?.title}</h2><span>{panel?.body}</span></div>{panel?.example && <blockquote>{panel.example}</blockquote>}</article>
     {allSeen
-      ? <div className="assembled-prompt"><b>Шесть частей вместе</b><p>Материал для руководителя, который смотрит на цифры. Подготовь сравнение портфеля за два года по приложенным данным. Формат: таблица и три вывода до 120 слов. Считай проценты от 2024 года. Не делай выводов о причинах и не сравнивай без данных.</p><small>Роль и ограничения нужны там, где цена ошибки высока: документ уходит наверх, наружу или под подпись. Для обычного черновика хватает четырёх частей.</small></div>
+      ? <div className="assembled-prompt"><b>Шесть частей вместе</b><p>Материал предназначен руководителю отделения. Особенно важны динамика показателей и отклонения. Подготовь сравнение портфеля за два года по приложенным данным. Формат: таблица и три вывода до 120 слов. Считай проценты от 2024 года. Не делай выводов о причинах и не сравнивай без данных.</p><small>Добавляйте эти части, если результат используется для решения, внешней коммуникации или официального документа. Для обычного черновика хватает четырёх частей.</small></div>
       : <Note text={props.slide.note} />}
   </div>;
 }
 
-function RussianServicesSlide(props: SlideViewProps) {
-  const panel = props.slide.panels?.[props.activePanel];
-  return <div className="content-layout"><SlideHeading slide={props.slide} />
-    <div className="service-pair">{props.slide.panels?.map((item, idx) => <button type="button" key={item.title} className={idx === props.activePanel ? 'service-card active' : 'service-card'} onClick={() => props.onPanel(idx)}><span>{idx === 0 ? 'G' : 'A'}</span><h2>{item.title}</h2><p>{item.body}</p></button>)}</div>
-    <div className="service-example"><b>{panel?.title}</b><p>{panel?.example}</p></div>
-    <div className="service-links"><a href="https://giga.chat" target="_blank" rel="noreferrer">Открыть GigaChat</a><a href="https://alice.yandex.ru" target="_blank" rel="noreferrer">Открыть Алису</a></div><Note text={props.slide.note} />
+// Экраны 22, 23 и 24 показываются одним шаблоном: у каждого сервиса те же
+// четыре поля, поэтому их можно сравнивать глазами, а не вычитывать.
+function ServiceCards(props: SlideViewProps & { links?: Array<[string, string]> }) {
+  const cards = props.slide.panels ?? [];
+  return <div className={`content-layout compact-content service-slide cards-${cards.length}`}>
+    <SlideHeading slide={props.slide} />
+    <div className="service-grid">{cards.map((card) => (
+      <article key={card.title} className="service-card-uniform">
+        <header><h2>{card.title}</h2>{card.example && <span className="service-tag">{card.example}</span>}</header>
+        {card.sections?.map((section) => (
+          <div key={section.label} className={section.label === 'Где слабее' ? 'weak' : section.label === 'Доступ из России' ? 'access' : ''}>
+            <b>{section.label}</b>
+            <p>{section.text}</p>
+          </div>
+        ))}
+      </article>
+    ))}</div>
+    {props.links && <div className="service-links">{props.links.map(([label, href]) => (
+      <a key={href} className="secondary-action" href={href} target="_blank" rel="noreferrer">{label}</a>
+    ))}</div>}
+    <Note text={props.slide.note} />
   </div>;
 }
 
+function RussianServicesSlide(props: SlideViewProps) {
+  return <ServiceCards {...props} links={[['Открыть GigaChat', 'https://giga.chat'], ['Открыть Алису', 'https://alice.yandex.ru']]} />;
+}
+
 function GlobalServicesSlide(props: SlideViewProps) {
-  return <div className="content-layout"><SlideHeading slide={props.slide} />
-    <div className="service-trio">{props.slide.panels?.map((item) => { const [name,focus] = item.title.split(' · '); return <article key={item.title} className="global-service"><small>{focus}</small><h2>{name}</h2><p>{item.body}</p><b>{item.example}</b></article>; })}</div><Note text={props.slide.note} />
-  </div>;
+  return <ServiceCards {...props} />;
+}
+
+function ChineseServicesSlide(props: SlideViewProps) {
+  return <ServiceCards {...props} />;
 }
 
 function BankGatewaySlide(props: SlideViewProps) {
@@ -867,10 +894,10 @@ function ChoiceSlide(props: SlideViewProps) {
 
 function ConfidenceSlide(props: SlideViewProps) {
   const points = [
-    ['Готового ответа не существует — он составляется на ходу', 'Модель предсказывает следующее слово по образцам из прочитанных текстов. Примерно как подсказка на клавиатуре телефона, только в несопоставимо большем масштабе.'],
-    ['Когда данных не хватает, ответ всё равно будет', 'Она обучена быть полезной — и предпочтёт правдоподобный ответ признанию «не знаю». Проще уверенно ошибиться, чем сказать «не в курсе».'],
-    ['Тон при этом не меняется', 'Та же уверенность, та же структура, те же формулировки. Верный ответ и домысел выглядят одинаково.'],
-    ['Значит, отличить может только тот, кто знает предмет', 'Не по тону и не по оформлению. Только по существу.'],
+    ['Модель составляет ответ во время диалога, на основе запроса и доступной информации', 'Модель предсказывает следующее слово по образцам из прочитанных текстов. Примерно как подсказка на клавиатуре телефона, только в несопоставимо большем масштабе.'],
+    ['Если данных недостаточно, модель может всё равно сформировать ответ', 'Она может заполнить пробел правдоподобной, но неверной версией.'],
+    ['Тон ответа не показывает, верен ли он', 'Правильный ответ и ошибка могут звучать одинаково уверенно.'],
+    ['Ключевые факты должен проверить специалист или сотрудник, у которого есть надёжный источник', 'Проверяйте ответ по существу, а не по тону и оформлению.'],
   ];
   const choice = props.chosen === null ? null : props.slide.choices?.[props.chosen];
   // Порядок вопроса: сначала четыре ответа без источника — иначе задание
@@ -887,27 +914,27 @@ function ConfidenceSlide(props: SlideViewProps) {
     {props.quizOpen && <div className="quiz-modal" role="dialog" aria-modal="true" aria-label="Проверка уверенного ответа">
       <button className="quiz-backdrop" type="button" onClick={props.onCloseQuiz} aria-label="Закрыть вопрос" />
       <section className="quiz-dialog confidence-quiz"><header><p className="question-label">Проверьте себя</p><button type="button" onClick={props.onCloseQuiz} aria-label="Закрыть">×</button></header>
-        <h2>{toneAnswer === null ? 'Видно ли по тексту, какой ответ верный?' : 'Тогда выберите тот, который считаете верным'}</h2>
+        <h2>{toneAnswer === null ? 'Можно ли определить правильный ответ только по формулировке и тону?' : 'Выберите ответ и проверьте его по документу'}</h2>
         <p className="quiz-context">Сотрудник спросил, за сколько дней нужно подать заявление на отпуск вне графика. В четырёх диалогах пришли четыре ответа.</p>
         <div className="choice-list compact">{props.slide.choices?.map((item,idx)=>{const state=props.chosen===idx?(item.correct?'correct':'wrong'):'';return <button key={item.label} type="button" className={`choice confidence-choice ${state}`} disabled={toneAnswer===null} onClick={()=>props.onChoose(idx)}><span>{String.fromCharCode(65+idx)}</span>{item.label}</button>})}</div>
         {toneAnswer === null && <div className="tone-question">
           <p>Прочитайте четыре ответа. Можно ли понять по формулировке, тону или уровню детализации, который из них верный?</p>
           <div className="tone-options">
-            <button className="secondary-action" type="button" onClick={()=>setToneAnswer('yes')}>Да, разница заметна</button>
-            <button className="secondary-action" type="button" onClick={()=>setToneAnswer('no')}>Нет, они одинаково уверенные</button>
+            <button className="secondary-action" type="button" onClick={()=>setToneAnswer('yes')}>Да, один ответ выглядит убедительнее</button>
+            <button className="secondary-action" type="button" onClick={()=>setToneAnswer('no')}>Нет, все ответы звучат одинаково уверенно</button>
           </div>
         </div>}
         {toneAnswer !== null && !choice && <div className="tone-verdict">
-          <b>{toneAnswer === 'no' ? 'Так и есть — по тексту отличить нельзя.' : 'Разница есть, но она не про правду.'}</b>
+          <b>{toneAnswer === 'no' ? 'По формулировке определить правильный ответ нельзя.' : 'Один ответ подробнее других, но подробность не подтверждает его правильность.'}</b>
           <p>{toneAnswer === 'no'
-            ? 'Все четыре написаны одинаково уверенно. Но выбрать всё равно придётся: попробуйте.'
-            : 'Один из ответов конкретнее остальных — и именно поэтому убедительнее. Конкретность не делает ответ верным. Попробуйте выбрать.'}</p>
+            ? 'Выберите вариант, чтобы затем проверить его по документу.'
+            : 'Выберите вариант и сравните его с источником.'}</p>
         </div>}
         {choice && <div className={choice.correct?'confidence-feedback ok':'confidence-feedback'}>
           <div className="source-quote"><b>Правила внутреннего трудового распорядка, п. 5.4</b><p>«Заявление о предоставлении отпуска вне утверждённого графика подаётся не позднее чем за три рабочих дня до его начала.»</p></div>
           <b>{choice.feedback}</b>
-          <p><strong>Проверить ответ по нему самому было невозможно.</strong> Пока не появился документ, это были четыре одинаково убедительных текста — и один шанс из четырёх. Подтвердить можно только внешней проверкой.</p>
-          <button className="secondary-action quiz-done" type="button" onClick={props.onCloseQuiz}>Вернуться к материалу</button>
+          <p><strong>Без документа определить правильный ответ было невозможно.</strong> Важные факты нужно подтверждать источником.</p>
+          <button className="secondary-action quiz-done" type="button" onClick={props.onCloseQuiz}>Вернуться к объяснению</button>
         </div>}
       </section>
     </div>}
@@ -921,14 +948,14 @@ function QuestionPopup({ props }: { props: SlideViewProps }) {
     <section className="quiz-dialog"><header><p className="question-label">Проверьте себя</p><button type="button" onClick={props.onCloseQuiz} aria-label="Закрыть">×</button></header>
       <h2>{props.slide.prompt}</h2><div className="choice-list">{props.slide.choices?.map((item, idx) => { const state = props.chosen === idx ? (item.correct ? 'correct' : 'wrong') : ''; return <button key={item.label} className={`choice ${state}`} type="button" onClick={() => props.onChoose(idx)}><span>{String.fromCharCode(65 + idx)}</span>{item.label}</button>; })}</div>
       {choice && <div className={choice.correct ? 'feedback correct' : 'feedback wrong'}>{choice.feedback}</div>}
-      {choice && <button className="secondary-action quiz-done" type="button" onClick={props.onCloseQuiz}>Вернуться к материалу</button>}
+      {choice && <button className="secondary-action quiz-done" type="button" onClick={props.onCloseQuiz}>Вернуться к объяснению</button>}
     </section>
   </div>;
 }
 
 // Вердикт между нажатием «Проверить» и разбором: три состояния по двум числам —
 // сколько верных отмечено и сколько отмечено лишних.
-function Verdict({ correct, selected, labels, reasons, successText, reviewLabel, extraLead = 'отмечать не нужно', onRetry, onReview }: {
+function Verdict({ correct, selected, labels, reasons, successText, reviewLabel, extraLead = 'отмечать не нужно', extraTitle, extraNote, numbered = true, onRetry, onReview }: {
   correct: number[];
   selected: number[];
   labels: string[];
@@ -936,6 +963,11 @@ function Verdict({ correct, selected, labels, reasons, successText, reviewLabel,
   successText: string;
   reviewLabel: string;
   extraLead?: string;
+  // Свой заголовок и своё пояснение к лишней отметке, когда общей формулировки мало.
+  extraTitle?: string;
+  extraNote?: string;
+  // Фрагменты пронумерованы графикой — тогда вердикт называет номер, иначе сам вариант.
+  numbered?: boolean;
   onRetry: () => void;
   onReview: () => void;
 }) {
@@ -946,15 +978,16 @@ function Verdict({ correct, selected, labels, reasons, successText, reviewLabel,
   const title = state === 'exact'
     ? '✓ Верно'
     : state === 'partial'
-      ? `Не всё. Отмечено ${correct.length - missed.length} из ${correct.length}`
-      : 'Почти';
+      ? (missed.length > 1 ? 'Вы пропустили нужные варианты' : 'Вы пропустили нужный вариант')
+      : (extraTitle ?? (extra.length > 1 ? 'Вы отметили лишние варианты' : 'Вы отметили лишний вариант'));
   return (
     <section className={`verdict verdict-${state}`} role="status">
       <b>{title}</b>
       {state === 'exact' && <p>{successText}</p>}
-      {extra.map((item) => <p key={item}>Фрагмент {item + 1} {extraLead} — {reasons[item]}</p>)}
-      {state === 'partial' && <p>Пропущено: {missed.map((item) => `фрагмент ${item + 1} — ${firstWords(labels[item])}`).join('; ')}</p>}
-      {state === 'almost' && missed.length > 0 && <p>Пропущено: {missed.map((item) => `фрагмент ${item + 1}`).join(', ')}</p>}
+      {extra.map((item) => <p key={item}>{numbered
+        ? (extraNote ? `Фрагмент ${item + 1}. ${extraNote}` : `Фрагмент ${item + 1} ${extraLead}, ${reasons[item]}`)
+        : `«${firstWords(labels[item])}»: ${reasons[item]}`}</p>)}
+      {missed.map((item) => <p key={`missed-${item}`}>Вы пропустили: {numbered ? `фрагмент ${item + 1}: ${firstWords(labels[item])}` : `«${firstWords(labels[item])}»`}{reasons[item] ? `. ${reasons[item]}` : ''}</p>)}
       <div className="verdict-actions">
         {state !== 'exact' && <button className="primary-action" type="button" onClick={onRetry}>Попробовать ещё раз</button>}
         <button className={state === 'exact' ? 'primary-action' : 'secondary-action'} type="button" onClick={onReview}>{reviewLabel}</button>
@@ -987,7 +1020,7 @@ function PairArc() {
   );
 }
 
-const boundaryKinds = ['Подготовка', 'Окончательное действие'];
+const boundaryKinds = ['Подготовка', 'Решение сотрудника'];
 
 function BoundarySlide(props: SlideViewProps) {
   const { registerBack, onPlayVoice, started } = props;
@@ -1005,9 +1038,9 @@ function BoundarySlide(props: SlideViewProps) {
   ];
   const tasks = [
     ['Составить черновик ответа на обращение клиента', 'Подготовка'],
-    ['Отправить этот ответ клиенту от имени банка', 'Окончательное действие'],
+    ['Отправить этот ответ клиенту от имени банка', 'Решение сотрудника'],
     ['Проверить заявку по заданным критериям и выделить риски', 'Подготовка'],
-    ['На основании этой проверки одобрить или отклонить заявку', 'Окончательное действие'],
+    ['На основании этой проверки одобрить или отклонить заявку', 'Решение сотрудника'],
   ];
 
   // Стрелка «назад» отматывает состояния слайда и только с первого уходит на слайд 6.
@@ -1029,11 +1062,11 @@ function BoundarySlide(props: SlideViewProps) {
 
   if (phase === 0) return <div className="content-layout boundary-stack boundary-explain">
     <div className="boundary-body">
-      <p className="bridge-line">Допустим, источник есть и факты вы сверили. Значит ли это, что результат можно пускать в дело?</p>
+      <p className="bridge-line">Можно ли использовать результат сразу после проверки фактов?</p>
       <SlideHeading slide={props.slide} />
-      <div className="pair-legend"><b><i className="dot can" />Можно поручить подготовку</b><b><i className="dot cannot" />Нельзя передавать окончательно</b></div>
+      <div className="pair-legend"><b><i className="dot can" />ИИ может подготовить материал</b><b><i className="dot cannot" />Решение принимает сотрудник</b></div>
       <div className="pair-cards">{pairs.map((pair)=><article key={pair[0]}><p className="can">{pair[0]}</p><i aria-hidden="true">↓</i><p className="cannot">{pair[1]}</p></article>)}</div>
-      <p className="autonomy-rule"><span aria-hidden="true">!</span><b>Чем дороже ошибка, тем меньше самостоятельности у модели.</b></p>
+      <p className="autonomy-rule"><span aria-hidden="true">!</span><b>Чем серьёзнее последствия ошибки, тем больше решений и проверок выполняет сотрудник.</b></p>
     </div>
     <div className="boundary-foot"><button className="primary-action" type="button" onClick={()=>setPhase(1)}>Проверить себя</button></div>
   </div>;
@@ -1047,7 +1080,7 @@ function BoundarySlide(props: SlideViewProps) {
     };
     return <div className="content-layout boundary-stack paired-question">
       <div className="boundary-body">
-        <div className="slide-heading"><p className="eyebrow">Проверьте себя</p><h1>Подготовка или окончательное действие?</h1><p className="slide-intro">Четыре задачи, две пары. Тема внутри пары одна — меняется только окончательность. Выберите ответ для каждой задачи.</p></div>
+        <div className="slide-heading"><p className="eyebrow">Проверьте себя</p><h1>Что может подготовить ИИ, а что должен решить сотрудник?</h1><p className="slide-intro">Распределите четыре задачи. Для каждой выберите «Подготовка» или «Решение сотрудника».</p></div>
         <div className="paired-question-list">
           <p className="pair-divider">Пара 1</p>
           {renderTask(0)}
@@ -1058,48 +1091,48 @@ function BoundarySlide(props: SlideViewProps) {
         </div>
       </div>
       <div className="boundary-foot">
-        {checked && <p className={exact?'ok':'retry'}>Верно: 1 и 3 — подготовка, 2 и 4 — окончательное действие.</p>}
-        <button className="primary-action" type="button" disabled={!ready} onClick={()=>checked?setPhase(2):setChecked(true)}>{checked?'Перейти к разбору':'Проверить'}</button>
+        {checked && <p className={exact?'ok':'retry'}>{exact ? 'Верно. Подготовку материала можно поручить ИИ, а решение и действие остаются за сотрудником.' : 'Исправьте задачи, отмеченные красным. Подготовку материала можно поручить ИИ, решение и действие остаются за сотрудником.'}</p>}
+        <button className="primary-action" type="button" disabled={!ready} onClick={()=>checked?(exact?setPhase(2):setChecked(false)):setChecked(true)}>{checked?(exact?'Посмотреть разбор':'Исправить'):'Проверить'}</button>
       </div>
     </div>;
   }
 
   if (phase === 2) return <div className="content-layout boundary-stack boundary-review">
     <div className="boundary-body">
-      <div className="slide-heading"><p className="eyebrow">Разбор</p><h1>Почему именно так</h1></div>
+      <div className="slide-heading"><p className="eyebrow">Разбор</p><h1>Почему эти задачи относятся к разным категориям</h1></div>
       <div className="boundary-review-pairs">
-        <article><div><b>Черновик ответа</b><p>ИИ помогает подготовить материал, дальше вы его проверяете и правите. Ничего необратимого пока не произошло.</p></div><PairArc /><div><b>Отправка клиенту</b><p>Действие уже создаёт последствия для банка и клиента. Отозвать отправленное письмо нельзя.</p></div></article>
-        <article><div><b>Проверка заявки</b><p>ИИ может собрать информацию, сопоставить с критериями и показать, на что посмотреть.</p></div><PairArc /><div><b>Решение по заявке</b><p>Окончательное решение остаётся за уполномоченным человеком. Обосновывать его тоже придётся вам.</p></div></article>
+        <article><div><b>Черновик ответа</b><p>ИИ готовит черновик, который сотрудник проверяет и исправляет до отправки. На этом этапе окончательное решение ещё не принято.</p></div><PairArc /><div><b>Отправка клиенту</b><p>После отправки письмо создаёт последствия для банка и клиента, поэтому решение об отправке принимает сотрудник.</p></div></article>
+        <article><div><b>Проверка заявки</b><p>ИИ может собрать информацию, сопоставить её с критериями и выделить риски. Итоговую оценку делает сотрудник.</p></div><PairArc /><div><b>Решение по заявке</b><p>Уполномоченный сотрудник принимает решение и отвечает за его обоснование.</p></div></article>
       </div>
     </div>
-    <div className="boundary-foot"><button className="primary-action" type="button" onClick={()=>setPhase(3)}>Дальше</button></div>
+    <div className="boundary-foot"><button className="primary-action" type="button" onClick={()=>setPhase(3)}>Показать правило</button></div>
   </div>;
 
   return <div className="content-layout boundary-stack boundary-accent">
     <div className="boundary-body accent-body">
       <div className="accent-group">
-        <section className="responsibility-accent"><b>ИИ может подготовить</b><strong>Человек решает, утверждает и отвечает за действие</strong></section>
-        <div className="signature-line"><span /><small>подпись</small></div>
+        <section className="responsibility-accent"><b>ИИ готовит материал</b><strong>Сотрудник принимает решение, утверждает результат и отвечает за действие</strong></section>
+        <div className="signature-line"><span /><small>решение сотрудника</small></div>
       </div>
     </div>
     <div className="boundary-foot">
-      <p className="review-rule">Проверочный вопрос: после этого шага что-то станет необратимым? Если да — шаг ваш.</p>
-      <button className="primary-action" type="button" onClick={props.onNext}>Дальше</button>
+      <p className="review-rule">Если после этого шага возникает обязательство перед клиентом, банком или регулятором, решение принимает сотрудник.</p>
+      <button className="primary-action" type="button" onClick={props.onNext}>Следующий экран</button>
     </div>
   </div>;
 }
 
 function BankUseSlide(props: SlideViewProps) {
   const choice = props.chosen === null ? null : props.slide.choices?.[props.chosen];
-  return <div className="content-layout"><SlideHeading slide={props.slide}/><div className="bank-use-layout"><section className="question-card"><p className="question-label">Выберите один вариант</p><div className="choice-list">{props.slide.choices?.map((item,idx)=>{const state=props.chosen===idx?(item.correct?'correct':'wrong'):'';return <button type="button" key={item.label} className={`choice ${state}`} onClick={()=>props.onChoose(idx)}><span>{idx+1}</span>{item.label}</button>})}</div>{choice&&<div className={choice.correct?'feedback correct':'feedback wrong'}>{choice.feedback}</div>}</section><div className="portrait-frame"><img src={asset('/media/avatar.png')} alt="Ведущий курса"/><span className="portrait-label">Три запрета здесь — про данные и окончательное действие.</span></div></div></div>;
+  return <div className="content-layout"><SlideHeading slide={props.slide}/><div className="bank-use-layout"><section className="question-card"><p className="question-label">Выберите один вариант</p><div className="choice-list">{props.slide.choices?.map((item,idx)=>{const state=props.chosen===idx?(item.correct?'correct':'wrong'):'';return <button type="button" key={item.label} className={`choice ${state}`} onClick={()=>props.onChoose(idx)}><span>{idx+1}</span>{item.label}</button>})}</div>{choice&&<div className={choice.correct?'feedback correct':'feedback wrong'}>{choice.feedback}</div>}</section><div className="portrait-frame"><img src={asset('/media/avatar.png')} alt="Ведущий курса"/><span className="portrait-label">Остальные варианты нарушают правила работы с данными или передают ИИ окончательное решение.</span></div></div></div>;
 }
 
 function PromptCompareSlide(props: SlideViewProps) {
-  return <div className="content-layout"><SlideHeading slide={props.slide}/><div className="prompt-compare"><article><b>Запрос А</b><code>Напиши справку по этим данным: открыто вкладов 1240 и 1418, с автопролонгацией 812 и 967, закрыто досрочно 428 и 451.</code></article><article className="better"><b>Запрос Б</b><code><mark>Подготовь справку</mark> об изменении портфеля вкладов. <em>Формат: таблица и три коротких вывода.</em> <u>Считай проценты от 2024 года. Не делай выводов о причинах.</u></code></article></div><div className="lesson-bottom"><Note text="Не «чем длиннее», а «чем точнее»: задача, форма результата и границы экономят круги уточнений."/><button className="primary-action" type="button" onClick={props.onOpenQuiz}>Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
+  return <div className="content-layout"><SlideHeading slide={props.slide}/><p className="slide-intro">Оба запроса содержат одинаковые данные. Во втором дополнительно указаны формат результата, объём и ограничения.</p><div className="prompt-compare"><article><b>Запрос А</b><code>Напиши справку по этим данным: открыто вкладов 1240 и 1418, с автопролонгацией 812 и 967, закрыто досрочно 428 и 451.</code></article><article className="better"><b>Запрос Б</b><code><mark>Подготовь справку</mark> об изменении портфеля вкладов. <em>Формат: таблица и три коротких вывода.</em> <u>Считай проценты от 2024 года. Не делай выводов о причинах.</u></code></article></div><div className="lesson-bottom"><Note text="Точный запрос помогает получить нужный результат быстрее. Формат и ограничения сокращают число доработок."/><button className="primary-action" type="button" onClick={props.onOpenQuiz}>Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
 }
 
 function ModelContextSlide(props: SlideViewProps) {
-  return <div className="content-layout"><SlideHeading slide={props.slide}/><div className="knowledge-columns"><section><h2>Может использовать</h2><p>Обучение · текущий запрос · приложенные файлы · сообщения диалога · поиск · память, если включена</p></section><section><h2>Не знает</h2><p>Внутренние документы · текущие показатели · договорённости коллег · ваш процесс и риск-политику · невысказанный смысл</p></section></div><div className="memory-callout"><b>Память работает в обе стороны</b><p>В публичном сервисе не оставляйте в истории того, чего там быть не должно. В корпоративном канале правила определяет банк.</p><button className="primary-action" onClick={props.onOpenQuiz} type="button">Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
+  return <div className="content-layout"><SlideHeading slide={props.slide}/><div className="knowledge-columns"><section><h2>Может использовать</h2><p>Знания, полученные при обучении, текущий запрос, приложенные файлы, сообщения диалога, поиск и память, если она включена</p></section><section><h2>Не знает</h2><p>Внутренние документы · текущие показатели · договорённости коллег · ваш процесс и риск-политику · то, что вы не написали и чего нет в доступных источниках</p></section></div><div className="memory-callout"><b>История диалога может хранить переданные данные</b><p>Не вводите в публичный сервис то, что запрещено передавать или хранить вне банка. В корпоративном канале правила определяет банк.</p><button className="primary-action" onClick={props.onOpenQuiz} type="button">Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
 }
 
 function RefinementSlide(props: SlideViewProps) {
@@ -1114,19 +1147,19 @@ function RefinementSlide(props: SlideViewProps) {
   const fragments = [
     ['Открыто вкладов: 1240 в 2024 году и 1418 в 2025 году.', ''],
     ['Доля автопролонгации: 65,5% и 68,2%.', ''],
-    ['Колонки с досрочно закрытыми вкладами в ответе нет.', 'Часть запроса не выполнена: третья колонка была в задаче, но в ответ не попала.'],
-    ['Рост показателей говорит об улучшении работы с вкладчиками.', 'Вывод, которого нет в данных: модель добавила интерпретацию от себя.'],
+    ['Колонки с досрочно закрытыми вкладами в ответе нет.', 'Часть запроса не выполнена. Третья колонка была в задаче, но в ответ не попала.'],
+    ['Рост показателей говорит об улучшении работы с вкладчиками.', 'Вывод, которого нет в исходных данных. Модель добавила его от себя.'],
   ];
   const correctMarks = [2, 3];
   const options = [
-    ['Перепиши всё заново, только лучше', 'Модель не знает, что именно «лучше». Ответ изменится случайным образом, а вы потратите ещё круг.'],
-    ['Добавь колонку по досрочно закрытым вкладам и убери вывод об улучшении работы — его нет в данных', 'Верно. Обе правки в одном сообщении, каждая названа конкретно, контекст диалога сохраняется.'],
-    ['Убери лишнее', 'Модель не знает, что здесь лишнее. Такое уточнение почти всегда приводит к третьему и четвёртому кругу.'],
+    ['Перепиши всё заново, только лучше', 'Модель не знает, что для вас значит «лучше». Ответ изменится непредсказуемо, и потребуется ещё одна доработка.'],
+    ['Добавь колонку по досрочно закрытым вкладам и убери вывод об улучшении работы — его нет в данных', 'Верно. Обе правки названы конкретно и отправлены одним сообщением.'],
+    ['Убери лишнее', 'Модель не знает, что здесь лишнее. После такого уточнения обычно требуется ещё несколько доработок.'],
   ];
   const exact = marks.length === 2 && correctMarks.every((item) => marks.includes(item));
 
   if (phase === 0) return <div className="content-layout compact-content refinement-slide">
-    <div className="slide-heading" data-slide-focus tabIndex={-1}><p className="eyebrow">Шаг 1 из 2 · Соберите замечания</p><h1>Сначала прочитайте ответ целиком</h1><p className="slide-intro">Вы просили таблицу по трём показателям за два года и три вывода строго по данным. Отметьте в ответе <strong>оба</strong> места, которые нужно исправить.</p></div>
+    <div className="slide-heading" data-slide-focus tabIndex={-1}><p className="eyebrow">Шаг 1 из 2 · Соберите замечания</p><h1>Прочитайте ответ целиком и отметьте оба места, которые нужно исправить</h1><p className="slide-intro">Вы просили таблицу по трём показателям за два года и три вывода строго по данным.</p></div>
     <section className="answer-review">
       <header><b>Ответ модели</b><span>по вашему запросу</span></header>
       {fragments.map((fragment, idx) => {
@@ -1140,8 +1173,8 @@ function RefinementSlide(props: SlideViewProps) {
       })}
     </section>
     <div className="refinement-foot">
-      {checked && <p className={exact ? 'ok' : 'retry'}>{exact ? 'Верно: пропущенная колонка и добавленный вывод. Это два замечания к одному ответу.' : 'Отмечены не те места. Правильные подписаны: пропущенная колонка и вывод, которого нет в данных.'}</p>}
-      <button className="primary-action" type="button" disabled={!marks.length} onClick={() => checked ? setPhase(1) : setChecked(true)}>{checked ? 'Дальше: отправить уточнение' : 'Проверить'}</button>
+      {checked && <p className={exact ? 'ok' : 'retry'}>{exact ? 'Верно. К одному ответу два замечания: пропущенная колонка и добавленный вывод.' : 'Отмечены другие строки. Правильные подписаны ниже: пропущенная колонка и вывод, которого нет в данных.'}</p>}
+      <button className="primary-action" type="button" disabled={!marks.length} onClick={() => checked ? setPhase(1) : setChecked(true)}>{checked ? 'Перейти к уточнению' : 'Проверить'}</button>
     </div>
   </div>;
 
@@ -1155,15 +1188,15 @@ function RefinementSlide(props: SlideViewProps) {
   </div>;
 
   return <div className="content-layout compact-content refinement-slide">
-    <div className="slide-heading" data-slide-focus tabIndex={-1}><p className="eyebrow">Результат</p><h1>Что изменилось после уточнения</h1></div>
+    <div className="slide-heading" data-slide-focus tabIndex={-1}><p className="eyebrow">Результат</p><h1>Как изменился ответ после уточнения</h1></div>
     <div className="refinement-compare">
-      <section><b>До уточнения</b><p>Две колонки вместо трёх. В конце — вывод об улучшении работы с вкладчиками, которого в данных нет.</p></section>
-      <section className="good"><b>После одного уточнения</b><p>Три колонки, как и просили. Выводы только те, что следуют из чисел. Исходные данные заново передавать не пришлось — они остались в диалоге.</p></section>
+      <section><b>До уточнения</b><p>В ответе не было третьей колонки. Кроме того, модель добавила вывод об улучшении работы с вкладчиками, который исходные данные не подтверждают.</p></section>
+      <section className="good"><b>После одного уточнения</b><p>Модель добавила недостающую колонку и убрала неподтверждённый вывод. Исходные данные уже были в диалоге, поэтому отправлять их заново не потребовалось.</p></section>
     </div>
     <section className="refinement-rule">
       <b>Правило</b>
-      <p>Дочитайте ответ до конца, соберите все замечания и отправьте их одним сообщением. Два отдельных уточнения дадут тот же результат, но модель обработает диалог дважды. Стереть и начать заново — потерять весь переданный контекст.</p>
-      <span>Если после двух-трёх уточнений результат не приближается — вернитесь к формулировке задачи.</span>
+      <p>Дочитайте ответ до конца, соберите все замечания и отправьте их одним сообщением. Одно сообщение помогает модели увидеть полный список исправлений и снижает риск пропустить часть замечаний. Не начинайте новый диалог без необходимости: в текущем уже есть исходные данные и предыдущий ответ.</p>
+      <span>Если после двух или трёх конкретных уточнений результат не улучшается, вернитесь к исходному запросу и сформулируйте задачу заново.</span>
     </section>
   </div>;
 }
@@ -1220,11 +1253,6 @@ function ServiceCriteriaSlide(props: SlideViewProps) {
   </div>;
 }
 
-function ChineseServicesSlide(props: SlideViewProps) {
-  const rows=[['DeepSeek','Логика, технические задачи и код','Рассуждение и код'],['Qwen','Текст, изображения, аудио и видео','Мультимодальность'],['Kimi','Исследование, таблица, документ или презентация','Офисные материалы'],['GLM','Большой материал и длинная многошаговая задача','Глубокий анализ']];
-  return <div className="content-layout"><SlideHeading slide={props.slide}/><div className="service-table"><header><b>Сервис</b><b>Выбирают, когда нужно</b><b>Сильный фокус</b></header>{rows.map(row=><div key={row[0]}><b>{row[0]}</b><span>{row[1]}</span><span>{row[2]}</span></div>)}</div><div className="lesson-bottom"><Note text={props.slide.note}/><button className="primary-action" type="button" onClick={props.onOpenQuiz}>Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
-}
-
 function MultiSlide(props: SlideViewProps) {
   if (props.slide.id === 5) return <HallucinationSlide {...props} />;
   if (props.slide.id === 18) return <FourChecksSlide {...props} />;
@@ -1262,15 +1290,15 @@ function HallucinationSlide(props: SlideViewProps) {
   const { onComplete } = props;
   useEffect(() => { if (phase === 3) onComplete(); }, [phase, onComplete]);
   // Ни один фрагмент не является подтверждённым фактом. Различается срочность:
-  // число и ссылка попадут в документ как доказательство, общее описание — нет.
+  // число и ссылка выглядят как доказательство, общее описание — нет.
   const reviews = [
-    ['Не использовать как подтверждённый факт', 'Общее утверждение о порядке. Проверить нужно и его, но оно не станет в вашем документе ни цифрой, ни ссылкой.', 'warn'],
-    ['Проверить в первую очередь', 'Конкретное число. Модель могла взять его из общей практики, а не из вашего документа.', 'danger'],
-    ['Проверить в первую очередь', 'Ссылка на конкретный пункт. Самое опасное место: выглядит как доказательство, но существование пункта нужно подтвердить.', 'danger'],
-    ['Не использовать как подтверждённый факт', 'Общее описание процедуры. Как ориентир годится, ссылаться на него в работе нельзя.', 'warn'],
+    ['Утверждение пока не подтверждено источником', 'Это общее описание порядка. Его нужно проверить, но оно не выглядит как конкретное доказательство.', 'warn'],
+    ['Проверить в первую очередь', 'Здесь указан конкретный срок. Проверьте его по документу, прежде чем использовать в работе.', 'danger'],
+    ['Проверить в первую очередь', 'Этот фрагмент проверяют первым: ссылка на конкретный пункт выглядит как доказательство.', 'danger'],
+    ['Утверждение пока не подтверждено источником', 'Это общее описание процедуры. Его нужно проверить по источнику, прежде чем использовать в работе.', 'warn'],
   ];
-  if (phase === 2) return <div className="content-layout compact-content hallucination-review"><div className="slide-heading"><p className="eyebrow">Разбор по фрагментам</p><h1>Проверять нужно не всё подряд</h1></div><div className="review-fragments">{props.slide.choices?.map((item,idx)=><article className={props.selected.includes(idx)?`${reviews[idx][2]} marked`:reviews[idx][2]} key={item.label}><span>{idx+1}</span><div><p>{item.label}</p>{props.selected.includes(idx)&&<em className="you-marked">вы отметили</em>}<b>{reviews[idx][0]}.</b><small>{reviews[idx][1]}</small></div></article>)}</div><div className="review-bottom"><p><b>Ни один из четырёх фрагментов не является подтверждённым фактом.</b> Разница в срочности: число и ссылка вызывают доверие именно своей конкретностью и уходят в документ как доказательство — с них и начинайте.</p><button className="primary-action" type="button" onClick={()=>setPhase(3)}>Дальше</button></div></div>;
-  if (phase === 3) return <div className="content-layout compact-content hallucination-term"><div className="slide-heading"><p className="eyebrow">Термин</p><h1>У этого есть название</h1></div><section className="term-accent"><b>Галлюцинация</b><p>Модель заполняет пробел правдоподобным текстом вместо того, чтобы сказать «не знаю».</p></section><div className="term-copy"><p>Это не обман и не сбой. Модель составляет ответ, а не достаёт готовый. Когда нужного факта нет, она достраивает то, что чаще всего встречается в похожих текстах. Так и появляется убедительный «пункт 3.5».</p><p>Термин вам встретится в статьях и интерфейсах сервисов. Он также используется в методических рекомендациях Банка России.</p></div><div className="term-bottom"><p>Чем конкретнее деталь, тем выше цена ошибки — и тем быстрее её нужно проверить.</p><button className="primary-action" type="button" onClick={props.onNext}>Дальше</button></div></div>;
+  if (phase === 2) return <div className="content-layout compact-content hallucination-review"><div className="slide-heading"><p className="eyebrow">Разбор по фрагментам</p><h1>С чего начинать проверку</h1></div><div className="review-fragments">{props.slide.choices?.map((item,idx)=><article className={props.selected.includes(idx)?`${reviews[idx][2]} marked`:reviews[idx][2]} key={item.label}><span>{idx+1}</span><div><p>{item.label}</p>{props.selected.includes(idx)&&<em className="you-marked">вы отметили</em>}<b>{reviews[idx][0]}.</b><small>{reviews[idx][1]}</small></div></article>)}</div><div className="review-bottom"><p><b>Ни один из четырёх фрагментов не подтверждён источником.</b> Число и ссылка могут быть восприняты как доказательство, поэтому сначала проверьте их.</p><button className="primary-action" type="button" onClick={()=>setPhase(3)}>Перейти к термину</button></div></div>;
+  if (phase === 3) return <div className="content-layout compact-content hallucination-term"><div className="slide-heading"><p className="eyebrow">Термин</p><h1>Как называется такая ошибка</h1></div><section className="term-accent"><b>Галлюцинация</b><p>Правдоподобная, но неподтверждённая или выдуманная деталь в ответе ИИ.</p></section><div className="term-copy"><p>Это типичная ошибка генеративной модели. Она возникает, когда модель заполняет пробел подходящим по смыслу текстом. Когда нужного факта нет, она достраивает то, что чаще всего встречается в похожих текстах. Так и появляется убедительный «пункт 3.5».</p></div><div className="term-bottom"><p>Сначала проверяйте конкретные числа и ссылки, потому что именно они выглядят как доказательство.</p><button className="primary-action" type="button" onClick={props.onNext}>Следующий экран</button></div></div>;
   const labels = props.slide.choices?.map((item)=>item.label) ?? [];
   const notNeeded = [
     'проверить нужно и его, но это общее утверждение о порядке: оно не станет в документе ни цифрой, ни ссылкой',
@@ -1279,8 +1307,8 @@ function HallucinationSlide(props: SlideViewProps) {
     'проверить нужно и его, но это общее описание процедуры, а не доказательство',
   ];
   return <div className="content-layout compact-content hallucination-task"><SlideHeading slide={props.slide}/><section className="assistant-answer-card"><header><b>Вопрос сотрудника</b><p>В какой срок согласовывается договор с новым контрагентом?</p></header><div className="answer-fragments">{props.slide.choices?.map((item,idx)=>{const selected=props.selected.includes(idx);return <button type="button" key={item.label} disabled={phase===1} className={selected?'selected':''} onClick={()=>props.onToggleMulti(idx)}><span>{idx+1}</span><p>{item.label}</p>{phase===1&&selected&&<em className="you-marked">вы отметили</em>}</button>})}</div>{phase===1
-    ? <Verdict correct={props.slide.correctIndexes ?? []} selected={props.selected} labels={labels} reasons={notNeeded} extraLead="проверяется во вторую очередь" successText="Вы выделили именно то, что выглядит доказательством: конкретное число и ссылку на пункт." reviewLabel="Смотреть разбор" onRetry={()=>{props.onResetMulti();setPhase(0);}} onReview={()=>{props.onCheckMulti();setPhase(2);}} />
-    : <footer><span><b>Задание:</b> отметьте фрагменты, которые нужно проверить <strong>в первую очередь</strong>. Их может быть несколько.</span><button type="button" disabled={!props.selected.length} onClick={()=>setPhase(1)}>Проверить</button></footer>}</section></div>;
+    ? <Verdict correct={props.slide.correctIndexes ?? []} selected={props.selected} labels={labels} reasons={notNeeded} extraTitle="Вы отметили лишний фрагмент" extraNote="Его тоже нужно проверить, но во вторую очередь: это общее описание процесса, а не конкретное доказательство." successText="Верно. Конкретное число и ссылка на документ выглядят убедительно, поэтому их проверяют первыми." reviewLabel="Посмотреть разбор" onRetry={()=>{props.onResetMulti();setPhase(0);}} onReview={()=>{props.onCheckMulti();setPhase(2);}} />
+    : <footer><span><b>Задание:</b> отметьте два фрагмента, которые выглядят как доказательство: их проверяют <strong>первыми</strong>.</span><button type="button" disabled={!props.selected.length} onClick={()=>setPhase(1)}>Проверить</button></footer>}</section></div>;
 }
 
 function FourChecksSlide(props: SlideViewProps) {
@@ -1289,9 +1317,9 @@ function FourChecksSlide(props: SlideViewProps) {
   // слева от задания и читались как ребус.
   const [phase,setPhase]=useState<0|1|2>(0);
   const exact = props.selected.length===2&&props.selected.includes(2)&&props.selected.includes(3);
-  const checks=[['Источник','Откуда взят важный факт?'],['Числа','База, период и единицы'],['Полнота','Выполнены ли все части запроса?'],['Смысл','Чего модель не могла знать?']];
+  const checks=[['Источники','чем подтверждается важный факт?'],['Расчёты','правильно ли выбраны база, период и единицы?'],['Полнота','выполнены ли все части запроса?'],['Выводы','есть ли в ответе утверждения, которых нет в исходных данных?']];
   const labels=props.slide.choices?.map(item=>item.label)??[];
-  const notNeeded=['расчёт верен: 1418 к 1240 — это ровно 14,4%','это корректный расчёт по предоставленным данным','',''];
+  const notNeeded=['это корректный расчёт: 1418 к 1240 это 14,4 процента','это корректный расчёт по предоставленным данным','',''];
   return <div className="content-layout compact-content checks-slide">
     <SlideHeading slide={props.slide}/>
     <section className="report-card">
@@ -1299,7 +1327,7 @@ function FourChecksSlide(props: SlideViewProps) {
         <b>Справка о динамике портфеля вкладов</b>
         <span>Модель составила её по вашим данным за 2024 и 2025 годы</span>
       </header>
-      <p className="report-task">Все четыре строки звучат одинаково уверенно. <strong>Отметьте те, которых нет в данных</strong> — модель добавила их от себя.</p>
+      <p className="report-task">Все четыре строки звучат одинаково уверенно. <strong>Отметьте два вывода, которые нельзя сделать на основании предоставленных данных.</strong></p>
       <div className="report-rows">
         {props.slide.choices?.map((item,idx)=>{
           const selected=props.selected.includes(idx);
@@ -1313,10 +1341,10 @@ function FourChecksSlide(props: SlideViewProps) {
         })}
       </div>
       {phase===1
-        ? <Verdict correct={props.slide.correctIndexes ?? []} selected={props.selected} labels={labels} reasons={notNeeded} successText="Вы отделили расчёт от интерпретации." reviewLabel="Смотреть разбор" onRetry={()=>{props.onResetMulti();setPhase(0);}} onReview={()=>{props.onCheckMulti();setPhase(2);}} />
+        ? <Verdict correct={props.slide.correctIndexes ?? []} selected={props.selected} labels={labels} reasons={notNeeded} extraTitle="Вы отметили строку, которая подтверждается исходными данными" successText="Верно. Расчёты подтверждаются данными, а выводы об эффективности не подтверждаются." reviewLabel="Посмотреть разбор" onRetry={()=>{props.onResetMulti();setPhase(0);}} onReview={()=>{props.onCheckMulti();setPhase(2);}} />
         : <footer>{!props.checkedMulti
             ? <button type="button" disabled={!props.selected.length} onClick={()=>setPhase(1)}>Проверить</button>
-            : <b>{exact?'Верно: числа посчитаны, выводы додуманы.':'Смысловая проверка важнее уверенного тона.'}</b>}</footer>}
+            : <b>{exact?'Верно. Расчёты подтверждаются данными, а выводы об эффективности не подтверждаются.':'Уверенный тон не заменяет проверку выводов по исходным данным.'}</b>}</footer>}
     </section>
     <div className="check-principles">
       <p className="checks-label">По этим четырём пунктам проверяется любой ответ</p>
@@ -1364,15 +1392,15 @@ function SourceFactSlide(props: SlideViewProps) {
   const noSource = ['Сократить или переписать текст','Изменить тон или структуру','Выписать поручения из документа'];
   const needsSource = ['Даты, суммы, ставки','Нормы и последние изменения','Продукты и процессы «у нас»'];
   const questions = [
-    {title:'Где дополнительный источник не нужен?',intro:'Отметьте все подходящие задачи. Их несколько.',items:['Вот черновик письма клиенту — перепиши короче и мягче','Вот протокол встречи — выпиши поручения и указанные в нём сроки','Напиши клиенту письмо с нашими действующими ставками по вкладам','Предложи три варианта заголовка для внутренней рассылки'],correct:[0,1,3],reasons:['','','ставок в запросе нет, модель добавит их от себя — нужен источник','']},
-    {title:'А где нужен проверяемый источник?',intro:'Отметьте все подходящие задачи. Их несколько.',items:['За сколько дней банк обязан ответить на обращение клиента','Измени тон этого письма на более официальный','Что изменилось в правилах работы с обращениями за последний месяц','Какие документы нужны юридическому лицу для открытия счёта в нашем банке'],correct:[0,2,3],reasons:['','изменение тона новых фактов не добавляет','','']},
+    {title:'В каких задачах ИИ не нужно добавлять новые факты?',intro:'Отметьте три задачи из четырёх.',items:['Вот черновик письма клиенту. Перепиши его короче и мягче','Вот протокол встречи. Выпиши поручения и указанные в нём сроки','Напиши клиенту письмо с нашими действующими ставками по вкладам','Предложи три варианта заголовка для внутренней рассылки'],correct:[0,1,3],reasons:['Для сокращения письма новые факты не нужны: исходный текст уже дан.','Для списка поручений новые факты не нужны: они уже есть в протоколе.','Для действующих ставок нужен актуальный источник.','Для заголовков новые факты не нужны.']},
+    {title:'В каких задачах нужен дополнительный источник?',intro:'Отметьте три задачи из четырёх.',items:['За сколько дней банк обязан ответить на обращение клиента','Измени тон этого письма на более официальный','Что изменилось в правилах работы с обращениями за последний месяц','Какие документы нужны юридическому лицу для открытия счёта в нашем банке'],correct:[0,2,3],reasons:['Для срока ответа нужна действующая норма.','Для изменения тона новые факты не нужны.','Для последних изменений нужен актуальный источник.','Для перечня документов нужны действующие правила банка.']},
   ];
   if (phase === 0) return <div className="content-layout compact-content source-explain"><SlideHeading slide={props.slide}/>
     <div className="source-duo">
-      <section className="source-card safe"><h2>Источник уже есть</h2><strong>ИИ обрабатывает то, что вы дали</strong><ul>{noSource.map(item=><li key={item}>{item}</li>)}</ul><footer>→ результат можно сверить</footer></section>
-      <section className="source-card risk"><h2>Нужен источник</h2><strong>ИИ должен добавить факты</strong><ul>{needsSource.map(item=><li key={item}>{item}</li>)}</ul><footer>→ факт нужно проверить</footer></section>
+      <section className="source-card safe"><h2>ИИ работает с предоставленным материалом</h2><ul>{noSource.map(item=><li key={item}>{item}</li>)}</ul><footer>→ результат можно сверить</footer></section>
+      <section className="source-card risk"><h2>ИИ должен добавить новые факты</h2><ul>{needsSource.map(item=><li key={item}>{item}</li>)}</ul><footer>→ факт нужно проверить</footer></section>
     </div>
-    <div className="source-bottom"><p>Есть источник — сверяйте с ним. Нет источника — не принимайте факт на веру.</p><button className="primary-action" type="button" onClick={()=>setPhase(1)}>Проверить себя</button></div>
+    <div className="source-bottom"><p>Если источник есть, сверяйте с ним. Если источника нет, не принимайте факт на веру.</p><button className="primary-action" type="button" onClick={()=>setPhase(1)}>Проверить себя</button></div>
   </div>;
   if (phase === 1 || phase === 2) {
     const idx = phase - 1;
@@ -1381,20 +1409,20 @@ function SourceFactSlide(props: SlideViewProps) {
     const setSelected = idx === 0 ? setFirst : setSecond;
     const isChecked = checked[idx];
     return <div className="content-layout compact-content source-question"><div className="slide-heading"><p className="eyebrow">Проверьте себя</p><h1>{question.title}</h1><p className="slide-intro">{question.intro}</p></div><div className="source-options">{question.items.map((item,itemIdx)=>{const chosen=selected.includes(itemIdx);const state=isChecked?(question.correct.includes(itemIdx)?'correct':chosen?'wrong':''):chosen?'selected':'';return <button type="button" key={item} disabled={isChecked} className={state} onClick={()=>setSelected(values=>values.includes(itemIdx)?values.filter(value=>value!==itemIdx):[...values,itemIdx])}><span>{chosen?'✓':''}</span><p>{item}</p>{isChecked&&chosen&&<em className="you-marked">вы отметили</em>}</button>})}</div>{isChecked
-      ? <Verdict correct={question.correct} selected={selected} labels={question.items} reasons={question.reasons} successText="Вы отделили работу с данным материалом от новых фактов." reviewLabel={phase===1?'Следующий вопрос':'Смотреть разбор'} onRetry={()=>{setSelected([]);setChecked(value=>({...value,[idx]:false}));}} onReview={()=>setPhase(phase===1?2:3)} />
+      ? <Verdict correct={question.correct} selected={selected} labels={question.items} reasons={question.reasons} numbered={false} successText="Верно. Вы определили, где ИИ работает с готовым материалом, а где добавляет новые факты." reviewLabel={phase===1?'Следующий вопрос':'Посмотреть разбор'} onRetry={()=>{setSelected([]);setChecked(value=>({...value,[idx]:false}));}} onReview={()=>setPhase(phase===1?2:3)} />
       : <div className="question-actions"><button className="primary-action" type="button" disabled={!selected.length} onClick={()=>setChecked(value=>({...value,[idx]:true}))}>Проверить</button></div>}</div>;
   }
   return <div className="content-layout compact-content source-review">
-    <div className="slide-heading"><h1>Почему именно так</h1></div>
+    <div className="slide-heading"><h1>Почему для одних задач достаточно исходного материала, а для других нужен источник</h1></div>
     <div className="source-review-layout">
-      <figure className="rates-overview"><div><img src={asset('/media/slide-06-invented-rates.png')} alt="Два полных ответа ИИ на один запрос с разными ставками"/></div><figcaption>Один запрос — разные цифры</figcaption></figure>
+      <figure className="rates-overview"><div><img src={asset('/media/slide-06-invented-rates.png')} alt="Два полных ответа ИИ на один запрос с разными ставками"/></div><figcaption>Один и тот же вопрос без источника даёт разные цифры</figcaption></figure>
       <section className="review-summary">
-        <div className="summary-group safe"><h2>Источник уже был</h2><p><span>✓</span><b>Черновик письма</b> — материал дан</p><p><span>✓</span><b>Поручения</b> — протокол приложен</p><p><span>✓</span><b>Заголовки</b> — это варианты</p><strong>✕ Ставок в запросе нет → нужен источник</strong></div>
-        <div className="summary-group risk"><h2>Факт нужно подтвердить</h2><p><b>Срок ответа</b> → действующая норма</p><p><b>Изменения</b> → актуальный источник</p><p><b>Документы «у нас»</b> → внутренние правила</p><strong>✓ Изменение тона новых фактов не добавляет</strong></div>
-        <div className="source-question-accent"><b>Чем я подтвержу этот факт?</b><p>Ответ <strong>«так написал ИИ»</strong> означает: нужен источник.</p></div>
+        <div className="summary-group safe"><h2>Источник уже был</h2><p><span>✓</span><b>Черновик письма:</b> материал предоставлен</p><p><span>✓</span><b>Поручения:</b> протокол приложен</p><p><span>✓</span><b>Заголовки:</b> это варианты формулировок</p><strong>Для ставок нужен дополнительный источник</strong></div>
+        <div className="summary-group risk"><h2>Факт нужно подтвердить</h2><p><b>Срок ответа:</b> действующая норма</p><p><b>Изменения:</b> актуальный источник</p><p><b>Документы банка:</b> внутренние правила</p><strong>Изменение тона не добавляет новых фактов</strong></div>
+        <div className="source-question-accent"><b>Чем подтверждается этот факт?</b><p>Ответ ИИ сам по себе не является источником. Найдите документ, данные или ссылку.</p></div>
       </section>
     </div>
-    <div className="source-review-footer"><p>Поиск и ссылки снижают риск, но не отменяют проверку.</p><button className="primary-action" type="button" onClick={props.onNext}>Дальше</button></div>
+    <div className="source-review-footer"><p>Даже если сервис показывает ссылки, откройте источник и убедитесь, что он подтверждает утверждение.</p><button className="primary-action" type="button" onClick={props.onNext}>Следующий экран</button></div>
   </div>;
 }
 
@@ -1413,11 +1441,11 @@ function DataZonesSlide(props: SlideViewProps) {
   const assign = (category: string) => {
     if (!card || solved) return;
     if (card.category === category) setSolved(card.feedback || 'Верно');
-    else setWrong(card.wrongFeedback ?? 'Не эта зона. Перечитайте материал: что именно в нём может раскрыться при загрузке?');
+    else setWrong(card.wrongFeedback ?? 'Правильная категория указана ниже. Проверьте, что именно в материале может раскрыться при загрузке.');
   };
   return <div className="content-layout compact-content zones-slide">
     <SlideHeading slide={props.slide}/>
-    <div className="traffic-zones wide"><span className="green">Зелёная<br/><small>можно в разрешённом сервисе</small></span><span className="yellow">Жёлтая<br/><small>уточнить до загрузки</small></span><span className="red">Красная<br/><small>нельзя</small></span></div>
+    <div className="traffic-zones wide"><span className="green">Зелёная<br/><small>можно использовать в разрешённом сервисе</small></span><span className="yellow">Жёлтая<br/><small>нельзя загружать до согласования</small></span><span className="red">Красная<br/><small>нельзя загружать во внешний сервис</small></span></div>
     {!done ? <section className="zone-practice">
       <header><p>Материал {position + 1} из {cards.length}</p><div className="zone-progress"><span style={{ width: `${(position / cards.length) * 100}%` }} /></div></header>
       <h2>{card.text}</h2>
@@ -1431,59 +1459,95 @@ function DataZonesSlide(props: SlideViewProps) {
         ? <div className="zone-feedback correct"><b>Верно</b><p>{solved}</p><button className="primary-action" type="button" onClick={() => { setPosition((value) => value + 1); setSolved(''); setWrong(''); }}>{position === cards.length - 1 ? 'Завершить' : 'Следующий материал'}</button></div>
         : wrong && <div className="zone-feedback wrong"><p>{wrong}</p></div>}
     </section>
-    : <section className="zone-complete"><b>{cards.length}/{cards.length}</b><h2>Все материалы разобраны</h2><p>Зелёный материал можно использовать только в разрешённом сервисе. Незнакомый материал по умолчанию жёлтый: до уточнения он не загружается никуда.</p></section>}
+    : <section className="zone-complete"><b>{cards.length}/{cards.length}</b><h2>Все материалы разобраны</h2><p>Зелёный материал можно использовать только в разрешённом сервисе.</p></section>}
     <Note text={props.slide.note}/>
   </div>;
 }
 
 function PromptBuilderSlide(props: SlideViewProps) {
-  // Действие совпадает с результатом: строка кладётся кликом прямо в ту зону,
-  // куда она должна попасть. Отдельного ряда кнопок-категорий нет.
-  const cards = props.slide.cards ?? [];
-  const zones = ['Задача', 'Контекст', 'Формат', 'Проверка'];
-  const excluded = 'Исключить: недопустимые данные';
+  // Проверяется тот навык, который нужен в работе: посмотреть на свой запрос
+  // и увидеть, чего в нём нет. Перебрать варианты наугад нельзя — после ответа
+  // сразу виден разбор, а следующий раунд открывается кнопкой.
   const { onComplete } = props;
-  const [position, setPosition] = useState(0);
-  const [filled, setFilled] = useState<Record<string, string>>({});
-  const [picked, setPicked] = useState<string | null>(null);
-  const card = cards[position];
-  const done = position >= cards.length;
+  const parts = ['Задача', 'Контекст', 'Формат', 'Проверка'];
+  const rounds = [
+    {
+      task: 'Объяснить клиенту, чем вклад отличается от накопительного счёта.',
+      lines: [
+        ['Задача', 'Составь объяснение отличий вклада от накопительного счёта'],
+        ['Контекст', 'Для клиента без опыта, по опубликованным условиям'],
+        ['Проверка', 'Не добавляй условий из других источников. Ставки не округляй'],
+      ],
+      missing: 'Формат',
+      why: 'Без формата модель не знает, нужен вам абзац, таблица или подробный документ.',
+      fix: 'Таблица из четырёх строк и три предложения, до 120 слов.',
+    },
+    {
+      task: 'Справка об изменении портфеля вкладов за год.',
+      lines: [
+        ['Задача', 'Подготовь справку об изменении портфеля вкладов за год'],
+        ['Контекст', 'Данные за 2024 и 2025 годы приложены. Справка для руководителя отделения.'],
+        ['Формат', 'Таблица сравнения и ровно три коротких вывода, до 120 слов'],
+      ],
+      missing: 'Проверка',
+      why: 'Не сказано, от какой базы считать проценты и что делать при нехватке данных. Без правила проверки модель может выбрать неверную базу расчёта или добавить неподтверждённый вывод.',
+      fix: 'Считай проценты от 2024 года. При нехватке данных напиши «нет данных» и не делай выводов о причинах.',
+    },
+    {
+      task: 'Памятка по правилам рабочей переписки.',
+      lines: [
+        ['Задача', 'Составь памятку по правилам рабочей переписки'],
+        ['Формат', 'Заголовок и пять шагов, каждый шаг не длиннее двух предложений'],
+        ['Проверка', 'Не добавляй правил, которых нет в исходном материале'],
+      ],
+      missing: 'Контекст',
+      why: 'Не сказано, для кого памятка и на каком материале её строить. Без исходного материала модель не сможет определить, какие правила действительно существуют.',
+      fix: 'Для новых сотрудников, по приложенным открытым правилам рабочей переписки.',
+    },
+  ];
+  const [round, setRound] = useState(0);
+  const [answer, setAnswer] = useState<string | null>(null);
+  const done = round >= rounds.length;
   useEffect(() => { if (done) onComplete(); }, [done, onComplete]);
-  const correct = Boolean(picked && card && picked === card.category);
-  const assign = (category: string) => { if (!correct && card) setPicked(category); };
-  const advance = () => {
-    if (!card) return;
-    if (card.category !== excluded) setFilled((value) => ({ ...value, [card.category]: card.text }));
-    setPicked(null);
-    setPosition((value) => value + 1);
-  };
-  const assembled = zones.map((zone) => filled[zone]).filter(Boolean).join('. ');
-  return <div className="content-layout compact-content builder-slide">
-    <SlideHeading slide={props.slide}/>
-    <div className="builder-zones">{zones.map((zone) => {
-      const state = filled[zone] ? 'filled' : picked === zone ? (correct ? 'correct' : 'wrong') : '';
-      return <button type="button" key={zone} className={`builder-zone ${state}`} disabled={done || Boolean(filled[zone]) || correct} onClick={() => assign(zone)}>
-        <b>{zone}</b>
-        <p>{filled[zone] || (done ? '—' : 'нажмите, если строка сюда')}</p>
-      </button>;
-    })}</div>
-    {!done ? <section className="builder-current">
-      <header><p>Строка {position + 1} из {cards.length}</p><div className="zone-progress"><span style={{ width: `${(position / cards.length) * 100}%` }} /></div></header>
-      <h2>{card.text}</h2>
-      {picked && (correct
-        ? <div className="builder-feedback correct"><b>Верно</b><p>{card.feedback}</p><button className="primary-action" type="button" onClick={advance}>{position === cards.length - 1 ? 'Показать собранный запрос' : 'Следующая строка'}</button></div>
-        : <div className="builder-feedback wrong"><b>Не эта часть</b><p>Это не «{picked.toLowerCase()}». Перечитайте строку: что она задаёт — действие, исходный материал, форму результата или границу? Нажмите другую зону.</p></div>)}
-      {!correct && <div className="builder-exclude">
-        <p>Если строку вообще нельзя отправлять во внешний сервис:</p>
-        <button className="secondary-action" type="button" onClick={() => assign(excluded)}>Исключить: недопустимые данные</button>
-      </div>}
+  if (done) return <div className="content-layout compact-content missing-slide">
+    <div className="slide-heading" data-slide-focus tabIndex={-1}><p className="eyebrow">Вы нашли недостающую часть во всех трёх запросах</p><h1>Перед отправкой проверяйте запрос по этим четырём частям</h1></div>
+    <div className="missing-summary">
+      {[['Задача', 'что нужно сделать, одно действие'],
+        ['Контекст', 'для кого, зачем и на каком материале'],
+        ['Формат', 'структура, объём и стиль результата'],
+        ['Проверка', 'что проверить и что делать, если данных не хватает']].map((item) => (
+        <article key={item[0]}><b>{item[0]}</b><p>{item[1]}</p></article>
+      ))}
+    </div>
+    <section className="missing-extra">
+      <b>После проверки структуры убедитесь, что этому сервису можно передавать такие данные</b>
+      <p>Выгрузку с ФИО и суммами передавать нельзя, как бы аккуратно ни был составлен запрос.</p>
     </section>
-    : <section className="builder-result">
-      <b>Безопасный запрос собран</b>
-      <p>{assembled}.</p>
-      <small>Пятая строка в запрос не вошла: выгрузка с ФИО и суммами не передаётся во внешний сервис ни в каком виде. Отсекается она не по стилю, а по допустимости данных.</small>
-    </section>}
-    <Note text={props.slide.note}/>
+  </div>;
+  const current = rounds[round];
+  const correct = answer === current.missing;
+  return <div className="content-layout compact-content missing-slide">
+    <div className="slide-heading" data-slide-focus tabIndex={-1}>
+      <p className="eyebrow">Запрос {round + 1} из 3</p>
+      <h1>Какой части здесь не хватает?</h1>
+      <p className="slide-intro">{current.task}</p>
+    </div>
+    <div className="missing-request">
+      {current.lines.map((line) => <article key={line[1]}><b>{line[0]}</b><p>{line[1]}</p></article>)}
+      <article className="gap"><b>?</b><p>здесь пусто</p></article>
+    </div>
+    <div className="missing-options">{parts.map((part) => {
+      const state = answer === null ? '' : part === current.missing ? 'correct' : answer === part ? 'wrong' : '';
+      return <button type="button" key={part} className={`missing-option ${state}`} disabled={correct} onClick={() => setAnswer(part)}>{part}</button>;
+    })}</div>
+    {answer && <div className={correct ? 'missing-feedback correct' : 'missing-feedback wrong'}>
+      <b>{correct ? `Верно — не хватает части «${current.missing}»` : `Не то. Часть «${answer}» в запросе есть. Не хватает части «${current.missing}».`}</b>
+      <p>{current.why}</p>
+      <div className="missing-fix"><span>Чего не хватало</span><p>{current.fix}</p></div>
+      <button className="primary-action" type="button" onClick={() => { setRound((value) => value + 1); setAnswer(null); }}>
+        {round === rounds.length - 1 ? 'Показать итог' : 'Следующий запрос'}
+      </button>
+    </div>}
   </div>;
 }
 
@@ -1584,6 +1648,7 @@ function CaseSlide(props: SlideViewProps) {
   const [caseParts,setCaseParts]=useState<Record<number,string>>({});
   const [caseFind,setCaseFind]=useState<number[]>([]);
   const [caseSpecialFeedback,setCaseSpecialFeedback]=useState('');
+  const [caseAttempts,setCaseAttempts]=useState(0);
   if (props.completed) {
     // Шаги 1, 2 и 5 критические: задача, данные и окончательное решение.
     // Ошибка в любом из них — не зачёт, сколько бы ни набрано в сумме.
@@ -1657,10 +1722,65 @@ function CaseSlide(props: SlideViewProps) {
   }
 
   if (props.caseStep === 3) {
-    const fragments=['Всегда отвечайте на рабочее письмо в течение одного часа.','Используйте понятную тему, отражающую содержание письма.','Кратко обозначьте следующий шаг и ожидаемое действие адресата.','Сотрудник обязан указывать точный срок ответа в каждом письме.'];
-    const check=()=>{const exact=caseFind.length===2&&caseFind.includes(0)&&caseFind.includes(3);if(exact){setCaseSpecialFeedback('Верно: добавленное правило и рекомендация, превращённая в обязанность.');if(!props.caseAnswered)props.onCaseChoose(0);}else setCaseSpecialFeedback('Найдите два места: выдуманное правило и рекомендацию, поданную как обязанность.');};
-    return <div className="content-layout case-slide compact-content"><SlideHeading slide={props.slide}/><div className="case-route">{steps.map((_,idx)=><span key={idx} className={idx<props.caseStep?'done':idx===props.caseStep?'active':''}>{idx+1}</span>)}</div><section className="case-card special-case"><p className="question-label">Шаг 4 из 5 · Проверьте черновик</p><h2>Отметьте два места, которые нельзя оставлять без сверки</h2><div className="case-fragments">{fragments.map((fragment,idx)=><button type="button" key={fragment} className={caseFind.includes(idx)?'selected':''} onClick={()=>setCaseFind(values=>values.includes(idx)?values.filter(v=>v!==idx):[...values,idx])}><span>{idx+1}</span>{fragment}</button>)}</div><div className="case-special-actions"><button type="button" onClick={check}>Проверить</button>{caseSpecialFeedback&&<p className={props.caseAnswered?'ok':'retry'}>{caseSpecialFeedback}</p>}{props.caseAnswered&&<button type="button" onClick={props.onCaseNext}>Следующий шаг</button>}</div></section></div>;
+    // Сверять черновик не с чем, если исходных правил нет на экране: слева
+    // источник, справа черновик. После второй неудачи разбор открывается сам.
+    const source = [
+      'Тема письма отражает его содержание.',
+      'В конце — следующий шаг и что требуется от адресата.',
+      'Срок ответа согласуется индивидуально, норматива нет.',
+    ];
+    const fragments = [
+      ['Всегда отвечайте на письмо в течение одного часа.', 'Выдумано: в источнике сказано обратное — срок согласуется.'],
+      ['Используйте понятную тему, отражающую содержание.', 'Есть в источнике — сверять нечего.'],
+      ['Обозначьте следующий шаг и действие адресата.', 'Есть в источнике, только переформулировано.'],
+      ['Сотрудник обязан указывать точный срок в каждом письме.', 'Рекомендация подана как обязанность: в источнике срок гибкий.'],
+    ];
+    const answer = [0, 3];
+    const exact = caseFind.length === 2 && answer.every((item) => caseFind.includes(item));
+    const revealed = props.caseAnswered || caseAttempts >= 2;
+    const check = () => {
+      if (props.caseAnswered) return;
+      if (exact) { setCaseSpecialFeedback('Верно: выдуманное правило и рекомендация, превращённая в обязанность.'); props.onCaseChoose(0); return; }
+      const next = caseAttempts + 1;
+      setCaseAttempts(next);
+      setCaseSpecialFeedback(next >= 2
+        ? 'Разбор открыт под строками. Посмотрите и нажмите «Следующий шаг».'
+        : 'Не то. Сверьте каждую строку с правилами слева: одного там нет вовсе, другое подано жёстче источника.');
+      if (next >= 2) props.onCaseChoose(1);
+    };
+    return <div className="content-layout case-slide compact-content">
+      <SlideHeading slide={props.slide}/>
+      <div className="case-route">{steps.map((_,idx)=><span key={idx} className={idx<props.caseStep?'done':idx===props.caseStep?'active':''}>{idx+1}</span>)}</div>
+      <section className="case-card special-case">
+        <p className="question-label">Шаг 4 из 5 · Проверьте черновик</p>
+        <h2>Что модель добавила от себя? Отметьте два места</h2>
+        <div className="case-check-layout">
+          <aside className="case-source">
+            <b>Исходные правила</b>
+            <ul>{source.map((item) => <li key={item}>{item}</li>)}</ul>
+          </aside>
+          <div className="case-draft">
+            <b>Черновик от модели</b>
+            <div className="case-fragments">{fragments.map((fragment, idx) => {
+              const picked = caseFind.includes(idx);
+              const state = revealed ? (answer.includes(idx) ? 'correct' : picked ? 'wrong' : '') : picked ? 'selected' : '';
+              return <button type="button" key={fragment[0]} className={state} disabled={revealed}
+                onClick={() => setCaseFind((values) => values.includes(idx) ? values.filter((value) => value !== idx) : [...values, idx])}>
+                <span>{idx + 1}</span>{fragment[0]}
+                {revealed && <small>{fragment[1]}</small>}
+              </button>;
+            })}</div>
+          </div>
+        </div>
+        <div className="case-special-actions">
+          {!props.caseAnswered && <button type="button" disabled={caseFind.length !== 2} onClick={check}>{caseFind.length === 2 ? 'Проверить' : 'Отметьте два места'}</button>}
+          {caseSpecialFeedback && <p className={props.caseAnswered && exact ? 'ok' : 'retry'}>{caseSpecialFeedback}</p>}
+          {props.caseAnswered && <button type="button" onClick={props.onCaseNext}>Следующий шаг</button>}
+        </div>
+      </section>
+    </div>;
   }
+
   const choice = props.chosen === null ? null : step.choices[props.chosen];
   return (
     <div className="content-layout case-slide">
@@ -1720,7 +1840,7 @@ function ValueSlide(props: SlideViewProps) {
   const rows = [
     { step: 'Прочитать и выбрать главное', usual: 25, ai: 3 },
     { step: 'Написать первый вариант', usual: 30, ai: 2 },
-    { step: 'Проверить, что ничего не выдумано', usual: 0, ai: 8 },
+    { step: 'Дополнительно проверить ответ ИИ по исходным правилам', usual: 0, ai: 8 },
   ];
   const max = 30;
   const bar = (value: number) => `${Math.max(value / max * 100, value ? 4 : 0)}%`;
@@ -1733,15 +1853,15 @@ function ValueSlide(props: SlideViewProps) {
           {rows.map((row) => (
             <article key={row.step}>
               <p>{row.step}</p>
-              <div className="bar usual"><i style={{ width: bar(row.usual) }} /><span>{row.usual ? `${row.usual} мин` : '—'}</span></div>
+              <div className="bar usual"><i style={{ width: bar(row.usual) }} /><span>{row.usual ? `${row.usual} мин` : '0 мин'}</span></div>
               <div className="bar ai"><i style={{ width: bar(row.ai) }} /><span>{row.ai} мин</span></div>
             </article>
           ))}
           <footer><p>Итого</p><b>55 минут</b><b className="win">13 минут</b></footer>
         </section>
         <section className="value-copy">
-          <p className="value-lead">Восемь минут из тринадцати уходит на проверку. Это не потеря времени — это то, чему учит четвёртый шаг курса.</p>
-          <p>Ассистент сделал черновик. Правила по-прежнему ваши, подпись — тоже.</p>
+          <p className="value-lead">Восемь из тринадцати минут уходят на проверку. Без неё черновик нельзя использовать в работе.</p>
+          <p>Ассистент подготовил черновик, но сотрудник выбирает содержание, согласует текст и отвечает за отправку.</p>
           <div className="value-not-done">
             <b>Что он не сделал</b>
             <ul>
@@ -1749,7 +1869,7 @@ function ValueSlide(props: SlideViewProps) {
               <li>не согласовал текст</li>
               <li>не отправил его</li>
             </ul>
-            <span>Это три места, где нужны вы.</span>
+            <span>Эти три решения остаются за сотрудником.</span>
           </div>
         </section>
       </div>
@@ -1785,7 +1905,7 @@ function AskSecuritySlide(props: SlideViewProps) {
           <footer>→ до загрузки, а не после</footer>
         </section>
       </div>
-      <div className="ask-channel"><b>Куда идти</b><span>Обратитесь в информационную безопасность через утверждённый в банке канал обращения — до загрузки, а не после. Пока ответа нет, материал не загружается.</span></div>
+      <div className="ask-channel"><b>Как получить согласование</b><span>Обратитесь в информационную безопасность через утверждённый в банке канал обращения — до загрузки, а не после.</span></div>
       <Note text={props.slide.note} />
     </div>
   );
