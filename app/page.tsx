@@ -1689,13 +1689,16 @@ function CaseSlide(props: SlideViewProps) {
   // «Пройти ещё раз» сбрасывает счёт в Home, но локальные ответы шагов 3 и 4
   // жили дальше: шаг оставался заполненным и заблокированным, а балл терялся.
   const restarted = props.caseStep === 0 && !props.caseAnswered && props.chosen === null;
-  useEffect(() => {
-    if (!restarted) return;
-    setCaseParts({});
-    setCaseFind([]);
-    setCaseSpecialFeedback('');
-    setCaseAttempts(0);
-  }, [restarted]);
+  const [wasRestarted, setWasRestarted] = useState(restarted);
+  if (restarted !== wasRestarted) {
+    setWasRestarted(restarted);
+    if (restarted) {
+      setCaseParts({});
+      setCaseFind([]);
+      setCaseSpecialFeedback('');
+      setCaseAttempts(0);
+    }
+  }
   if (props.completed) {
     // Шаги 1, 2 и 5 критические: задача, данные и окончательное решение.
     // Ошибка в любом из них — не зачёт, сколько бы ни набрано в сумме.
