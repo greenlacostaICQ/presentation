@@ -108,9 +108,9 @@ button { color: inherit; }
 .chapter-name {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: .09em;
+  letter-spacing: .04em;
   text-transform: uppercase;
 }
 
@@ -399,8 +399,8 @@ button:focus-visible, select:focus-visible, a:focus-visible {
 .cause-layout { display: grid; grid-template-columns: 1fr .9fr; gap: 26px; }
 .cause-wheel { position: relative; display: grid; min-height: 330px; grid-template-columns: 1fr 1fr; gap: 8px; padding: 58px; border-radius: 50%; background: #e7eef2; }
 .cause-wheel strong { position: absolute; inset: 0; display: grid; width: 155px; height: 155px; place-items: center; margin: auto; border-radius: 50%; background: var(--sinara-navy); color: white; text-align: center; }
-.cause-wheel button { padding: 12px; border: 1px solid white; background: #cbd9e2; cursor: pointer; font-size: 12px; font-weight: 700; }
-.cause-wheel button:nth-of-type(1){border-radius:100% 12px 12px 12px;padding-right:78px}.cause-wheel button:nth-of-type(2){border-radius:12px 100% 12px 12px;padding-left:78px}.cause-wheel button:nth-of-type(3){border-radius:12px 12px 12px 100%;padding-right:78px}.cause-wheel button:nth-of-type(4){border-radius:12px 12px 100% 12px;padding-left:78px}.cause-wheel button.active{background:var(--sinara-red);color:white}
+.cause-wheel button { padding: 12px 78px; border: 1px solid white; background: #cbd9e2; cursor: pointer; font-size: 11px; font-weight: 700; }
+.cause-wheel button:nth-of-type(1){border-radius:100% 12px 12px 12px}.cause-wheel button:nth-of-type(2){border-radius:12px 100% 12px 12px}.cause-wheel button:nth-of-type(3){border-radius:12px 12px 12px 100%}.cause-wheel button:nth-of-type(4){border-radius:12px 12px 100% 12px}.cause-wheel button.active{background:var(--sinara-red);color:white}
 .formula-tabs { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
 .formula-tabs.six { grid-template-columns: repeat(6,1fr); }
 .formula-tabs button { min-height: 54px; padding: 8px; border: 0; border-radius: 12px; background: #dfeaf0; cursor: pointer; font-size: 13px; font-weight: 750; }
@@ -1322,6 +1322,9 @@ button:focus-visible, select:focus-visible, a:focus-visible {
 
 /* Экран 18: замечания, уточнение, сравнение. */
 .answer-review { display: grid; gap: 8px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 16px; background: white; }
+.answer-request { padding: 11px 14px; border-radius: 11px; background: #eef3f6; }
+.answer-request b { display: block; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.answer-request p { margin: 4px 0 0; color: var(--sinara-navy); font-size: 14px; line-height: 1.4; }
 .answer-review > header { display: flex; align-items: baseline; gap: 10px; }
 .answer-review > header b { font-size: 15px; }
 .answer-review > header span { color: var(--muted); font-size: 12px; }
@@ -1722,4 +1725,88 @@ button:focus-visible, select:focus-visible, a:focus-visible {
   .tone-options { flex-direction: column; }
   .tone-options button { width: 100%; }
   .algorithm-outcomes { grid-template-columns: 1fr; }
+}
+
+/* Невысокое окно: экраны 17, 18 и 20 иначе уходят под нижнюю панель. */
+@media (max-height: 840px) and (min-width: 761px) {
+  .missing-slide .slide-heading { margin-bottom: 10px; }
+  .missing-slide h1 { font-size: clamp(25px, 2.2vw, 32px); }
+  .missing-request { gap: 5px; }
+  .missing-request article { padding: 8px 16px; }
+  .missing-options { margin-top: 8px; }
+  .missing-feedback { margin-top: 9px; padding: 11px 16px; }
+  .missing-fix { margin-top: 6px; }
+  .refinement-slide .slide-heading { margin-bottom: 9px; }
+  .refinement-slide h1 { font-size: clamp(25px, 2.2vw, 33px); }
+  .answer-review { gap: 5px; padding: 11px 16px; }
+  .answer-review button { min-height: 38px; padding: 7px 14px; }
+  .answer-review button small { margin-top: 3px; font-size: 12px; }
+  .answer-request { padding: 8px 13px; }
+  .answer-request p { font-size: 13px; }
+  .checks-slide .slide-heading { margin-bottom: 7px; }
+  .checks-slide h1 { font-size: clamp(25px, 2.2vw, 33px); }
+  .checks-slide .slide-intro { margin-top: 7px; font-size: 15px; }
+  .checks-slide .report-card { gap: 6px; padding: 11px 18px; }
+  .report-task { padding: 8px 13px; }
+  .report-rows { gap: 5px; }
+  .report-rows button { padding: 7px 14px; }
+  .check-principles { margin-top: 7px; }
+  .check-principles article { padding: 6px 11px; }
+  .check-principles p { font-size: 11px; line-height: 1.25; }
+  .service-slide .slide-heading { margin-bottom: 10px; }
+  .service-slide h1 { font-size: clamp(25px, 2.2vw, 34px); }
+  .service-slide .slide-intro { margin-top: 8px; font-size: 15px; }
+  .service-card-uniform { gap: 7px; padding: 11px 14px; }
+  .service-card-uniform > header { padding-bottom: 8px; }
+  .service-card-uniform p { font-size: 12px; line-height: 1.35; }
+  .service-links { margin-top: 9px; }
+  .practice-slide .slide-heading { margin-bottom: 10px; }
+  .practice-slide h1 { font-size: clamp(25px, 2.2vw, 33px); }
+  .case-slide .slide-heading { margin-bottom: 10px; }
+  .case-slide h1 { font-size: clamp(25px, 2.2vw, 33px); }
+  .case-route { margin-bottom: 12px; }
+  .case-slide h1 { font-size: clamp(23px, 2vw, 29px); }
+  .case-slide .slide-intro { margin-top: 7px; font-size: 15px; }
+  .case-slide .case-route { margin-bottom: 9px; }
+  .case-slide .case-card.special-case > .question-label { margin-bottom: 4px; }
+  .case-slide .case-card.special-case { padding: 12px 18px; }
+  .case-slide .case-card.special-case h2 { margin-bottom: 9px; }
+  .case-slide .case-fragments button { padding: 7px 13px; }
+  .case-slide .case-fragments button small { margin-top: 3px; }
+  .case-slide .case-part-list article { padding: 8px 12px; }
+  .case-slide .case-source { padding: 10px 13px; }
+  .case-slide .case-fragments { gap: 6px; }
+  .case-slide .case-card.special-case .case-special-actions { margin-top: 8px; }
+}
+
+/* Экран 26: учебный ответ для сотрудников без доступа к разрешённому сервису. */
+.sample-dialog .sample-lead { margin: 0 0 12px; color: var(--muted); font-size: 14px; line-height: 1.45; }
+.sample-dialog pre { max-height: 46vh; margin: 0; overflow: auto; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: #f7f9fa; color: var(--sinara-navy); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.55; white-space: pre-wrap; }
+
+/* Экраны 22-24: общий блок о том, как сравнивать сервисы. */
+.service-compare { margin-top: 12px; padding: 13px 18px; border: 1px solid var(--line); border-left: 4px solid var(--sinara-navy); border-radius: 13px; background: white; }
+.service-compare b { display: block; margin-bottom: 5px; color: var(--sinara-navy); font-size: 14px; }
+.service-compare p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+/* Экран 27: ситуация кейса должна читаться до шагов, а не теряться в подзаголовке. */
+.case-situation { margin: 0 0 16px; padding: 13px 18px; border-left: 4px solid var(--sinara-red); border-radius: 12px; background: white; box-shadow: 0 10px 26px rgba(19,33,49,.06); }
+.case-situation b { display: block; margin-bottom: 4px; color: var(--sinara-red); font-size: 11px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+.case-situation p { margin: 0; color: var(--sinara-navy); font-size: 16px; line-height: 1.45; }
+@media (max-height: 840px) and (min-width: 761px) {
+  .service-compare { margin-top: 7px; padding: 9px 16px; }
+  .service-compare p { font-size: 12px; line-height: 1.4; }
+  .case-situation { margin-bottom: 10px; padding: 10px 16px; }
+  .case-situation p { font-size: 15px; }
+}
+@media (max-width: 760px) {
+  .case-situation p { font-size: 15px; }
+}
+
+/* Мобильный: прокрутка на уровне документа. Вложенный скролл внутри .stage
+   пальцем доступен не всегда, из-за чего часть экрана оставалась недостижимой. */
+@media (max-width: 760px) {
+  html, body { height: auto; overflow: visible; }
+  .course { height: auto; min-height: 100dvh; overflow: visible; }
+  .stage { height: auto; min-height: 100dvh; overflow: visible; }
+  .content-layout, .cover-layout, .final-layout { height: auto; min-height: 0; }
 }

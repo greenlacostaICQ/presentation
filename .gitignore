@@ -19,6 +19,10 @@
 # misc
 .DS_Store
 *.pem
+*.tsbuildinfo
+/.claude/
+/.openai/
+/public/audio/_removed/
 
 # debug
 npm-debug.log*
