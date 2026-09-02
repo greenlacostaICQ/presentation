@@ -21,12 +21,18 @@ npm run build
 
 ## Развёртывание на сервере
 
-Репозиторий клонируется в `/home/debian/interactive-presentation`, после чего
-контейнер собирается и перезапускается из этой директории:
+Репозиторий клонируется в `/home/debian/interactive-presentation`. Образ
+собирается из этой директории, после чего контейнер перезапускается:
 
 ```bash
 git pull --ff-only origin main
-docker compose up -d --build
+sudo docker build -t interactive-presentation-course:latest .
+sudo docker rm -f interactive-presentation || true
+sudo docker run -d \
+  --name interactive-presentation \
+  --restart unless-stopped \
+  -p 8080:3000 \
+  interactive-presentation-course:latest
 ```
 
 В репозитории хранятся только исходники и используемые медиа. Зависимости,
