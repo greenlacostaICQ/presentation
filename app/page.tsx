@@ -8,7 +8,12 @@ import { chapters, slides, type Slide } from './course-data';
 declare global {
   interface Window { __ASSETS?: Record<string, string> }
 }
-const asset = (path: string) => (typeof window === 'undefined' ? path : window.__ASSETS?.[path] ?? path);
+const publicBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+const asset = (path: string) => (
+  typeof window === 'undefined'
+    ? `${publicBasePath}${path}`
+    : window.__ASSETS?.[path] ?? `${publicBasePath}${path}`
+);
 
 function BrandLogo({ light = false }: { light?: boolean }) {
   return (
