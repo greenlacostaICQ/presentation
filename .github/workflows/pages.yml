@@ -43,6 +43,8 @@ jobs:
             sleep 1
           done
           test -s dist/client/index.html
+          mv dist/client/presentation/_next dist/client/_next
+          rmdir dist/client/presentation
           touch dist/client/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
