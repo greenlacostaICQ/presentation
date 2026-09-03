@@ -754,12 +754,12 @@ function LevelsSlide(props: SlideViewProps) {
 function SafetyDataSlide(props: SlideViewProps) {
   const panel = props.slide.panels?.[props.activePanel];
   return <div className="content-layout compact-content"><SlideHeading slide={props.slide} />
-    <div className="safety-columns"><section><h2>Можно использовать</h2><p>План развития · структура презентации · список вопросов · объяснение термина · черновик без реквизитов · повестка встречи</p></section><section className="danger"><h2>Нельзя вводить в публичный сервис</h2><p>ФИО и контакты · счета и договоры · операции клиентов · кадровые сведения · внутренние документы · пароли и токены</p></section></div>
-    <StepProgress instruction="Разберите три ситуации и определите безопасный способ работы в каждой." visited={props.visitedPanels.length} total={props.slide.panels?.length ?? 0} doneText="Все три ситуации открыты." />
+    <div className="safety-columns"><section><h2>Можно передавать</h2><p>План развития · структуру презентации · список вопросов · объяснение термина · черновик без реквизитов · повестка встречи</p></section><section className="danger"><h2>Нельзя передавать</h2><p>ФИО и контакты · счета и договоры · операции клиентов · кадровые сведения · внутренние документы · пароли и токены</p></section></div>
+    <StepProgress instruction="Разберите три ситуации и определите безопасный способ работы в каждой." visited={props.visitedPanels.length} total={props.slide.panels?.length ?? 0} doneText="Все три ситуации разобраны." />
     <div className="situation-strip">{props.slide.panels?.map((item, idx) => <button type="button" key={item.title} className={idx === props.activePanel ? 'active' : props.visitedPanels.includes(idx) ? 'visited' : ''} onClick={() => props.onPanel(idx)}>{idx + 1}. {item.title}{props.visitedPanels.includes(idx) && <i aria-label="просмотрено"> ✓</i>}</button>)}</div>
     <article className={`situation-result tone-${panel?.tone ?? 'blue'}`}><b>{panel?.title}</b><p>{panel?.body}</p></article>
     {props.visitedPanels.length >= (props.slide.panels?.length ?? 0)
-      ? <section className="panel-conclusion"><b>Во всех трёх ситуациях темы были разными</b><p>Правила работы с данными оставались одинаковыми. Публичному сервису можно описать тип задачи, но нельзя передавать реальные рабочие данные.</p></section>
+      ? <section className="panel-conclusion"><b>Главное правило</b><p>В публичный ИИ-сервис можно передать описание задачи, но нельзя копировать реальные рабочие данные. Замените их вымышленными примерами или попросите подготовить пустой шаблон.</p></section>
       : <Note text={props.slide.note} />}
   </div>;
 }
@@ -1462,11 +1462,11 @@ function DataZonesSlide(props: SlideViewProps) {
   };
   return <div className="content-layout compact-content zones-slide">
     <SlideHeading slide={props.slide}/>
-    <div className="traffic-zones wide"><span className="green">Зелёная<br/><small>можно использовать в разрешённом сервисе</small></span><span className="yellow">Жёлтая<br/><small>нельзя загружать до согласования</small></span><span className="red">Красная<br/><small>нельзя загружать во внешний сервис</small></span></div>
+    <div className="traffic-zones wide"><span className="green">Зелёная<br/><small>можно использовать в разрешённом сервисе</small></span><span className="yellow">Жёлтая<br/><small>сначала нужно получить согласование</small></span><span className="red">Красная<br/><small>нельзя передавать во внешний ИИ-сервис</small></span></div>
     {!done ? <section className="zone-practice">
       <header><p>Материал {position + 1} из {cards.length}</p><div className="zone-progress"><span style={{ width: `${(position / cards.length) * 100}%` }} /></div></header>
       <h2>{card.text}</h2>
-      <p className="zone-instruction">Выберите зону этого материала.</p>
+      <p className="zone-instruction">К какой категории относятся эти данные?</p>
       <div className="zone-choices">{props.slide.categories?.map((category) => (
         <button type="button" key={category} disabled={Boolean(solved)}
           className={`zone-choice zone-${zoneOf(category)}${solved && card.category === category ? ' picked' : ''}`}
