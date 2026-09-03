@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { chapters, slides, type Slide } from './course-data';
 
 // В обычной сборке пути отдаёт сервер. В офлайн-сборке одним файлом медиа
@@ -314,6 +314,8 @@ export default function Home() {
 
   const progress = ((index + 1) / slides.length) * 100;
   const currentChapter = useMemo(() => chapters.findLast((item) => index >= item.start)?.title ?? 'Вход', [index]);
+  // Последний экран раздела: на кнопке «далее» подписываем, куда ведёт переход.
+  const nextChapter = useMemo(() => chapters.find((item) => item.start === index + 1)?.title ?? null, [index]);
 
   return (
     <main className={`course course-slide-${slide.id}`}>
@@ -435,7 +437,7 @@ export default function Home() {
         {captions && slide.voice && <div className="captions" role="status" ref={captionsRef}>{slide.voice}</div>}
       </section>
 
-      <footer className={overlayOpen ? 'course-controls is-blocked' : 'course-controls'} aria-hidden={overlayOpen}>
+      <footer className={`course-controls${overlayOpen ? ' is-blocked' : ''}${nextChapter ? ' has-chapter-jump' : ''}`} aria-hidden={overlayOpen}>
         <button className="nav-button" type="button" onClick={goBack} disabled={index === 0 || overlayOpen} tabIndex={overlayOpen ? -1 : undefined} aria-label="Предыдущий экран">
           <Icon name="back" />
         </button>
@@ -443,8 +445,14 @@ export default function Home() {
           <Icon name={isPlaying ? 'pause' : playedOnce ? 'repeat' : 'play'} />
         </button>
         <div className="manual-hint">{nextBlocked ? 'Завершите действие на экране' : slide.hasAudio === false ? 'Текст экрана — на самом экране' : isPlaying ? 'Озвучка воспроизводится' : playedOnce ? 'Озвучка завершена' : 'Переключайте экраны стрелками'}</div>
-        <button className="nav-button next-button" type="button" onClick={() => goTo(index + 1)} disabled={index === slides.length - 1 || nextBlocked || overlayOpen} tabIndex={overlayOpen ? -1 : undefined} aria-label="Следующий экран">
-          <Icon name="next" />
+        <button className={nextChapter ? 'nav-button next-button is-chapter-jump' : 'nav-button next-button'} type="button" onClick={() => goTo(index + 1)} disabled={index === slides.length - 1 || nextBlocked || overlayOpen} tabIndex={overlayOpen ? -1 : undefined} aria-label={nextChapter ? `Следующий раздел: ${nextChapter}` : 'Следующий экран'}>
+          {nextChapter && (
+            <span className="next-chapter">
+              <small>Следующий раздел</small>
+              <b>«{nextChapter}»</b>
+            </span>
+          )}
+          <span className="next-chapter-arrow"><Icon name="next" /></span>
         </button>
       </footer>
 
@@ -553,11 +561,12 @@ function SlideView(props: SlideViewProps) {
   return <FinalSlide {...props} />;
 }
 
-function SlideHeading({ slide }: { slide: Slide }) {
+function SlideHeading({ slide, children }: { slide: Slide; children?: ReactNode }) {
   return (
     <div className="slide-heading" data-slide-focus tabIndex={-1}>
       {slide.kicker && <p className="eyebrow">{slide.kicker}</p>}
       <h1>{slide.title}</h1>
+      {children}
       {slide.intro && <p className="slide-intro">{slide.intro}</p>}
     </div>
   );
@@ -750,12 +759,12 @@ function LevelsSlide(props: SlideViewProps) {
 function SafetyDataSlide(props: SlideViewProps) {
   const panel = props.slide.panels?.[props.activePanel];
   return <div className="content-layout compact-content"><SlideHeading slide={props.slide} />
-    <div className="safety-columns"><section><h2>Можно использовать</h2><p>План развития · структура презентации · список вопросов · объяснение термина · черновик без реквизитов · повестка встречи</p></section><section className="danger"><h2>Нельзя вводить в публичный сервис</h2><p>ФИО и контакты · счета и договоры · операции клиентов · кадровые сведения · внутренние документы · пароли и токены</p></section></div>
-    <StepProgress instruction="Разберите три ситуации и определите безопасный способ работы в каждой." visited={props.visitedPanels.length} total={props.slide.panels?.length ?? 0} doneText="Все три ситуации открыты." />
+    <div className="safety-columns"><section><h2>Можно передавать</h2><p>План развития · структуру презентации · список вопросов · объяснение термина · черновик без реквизитов · повестка встречи</p></section><section className="danger"><h2>Нельзя передавать</h2><p>ФИО и контакты · счета и договоры · операции клиентов · кадровые сведения · внутренние документы · пароли и токены</p></section></div>
+    <StepProgress instruction="Разберите три ситуации и определите безопасный способ работы в каждой." visited={props.visitedPanels.length} total={props.slide.panels?.length ?? 0} doneText="Все три ситуации разобраны." />
     <div className="situation-strip">{props.slide.panels?.map((item, idx) => <button type="button" key={item.title} className={idx === props.activePanel ? 'active' : props.visitedPanels.includes(idx) ? 'visited' : ''} onClick={() => props.onPanel(idx)}>{idx + 1}. {item.title}{props.visitedPanels.includes(idx) && <i aria-label="просмотрено"> ✓</i>}</button>)}</div>
     <article className={`situation-result tone-${panel?.tone ?? 'blue'}`}><b>{panel?.title}</b><p>{panel?.body}</p></article>
     {props.visitedPanels.length >= (props.slide.panels?.length ?? 0)
-      ? <section className="panel-conclusion"><b>Во всех трёх ситуациях темы были разными</b><p>Правила работы с данными оставались одинаковыми. Публичному сервису можно описать тип задачи, но нельзя передавать реальные рабочие данные.</p></section>
+      ? <section className="panel-conclusion"><b>Главное правило</b><p>В публичный ИИ-сервис можно передать описание задачи, но нельзя копировать реальные рабочие данные. Замените их вымышленными примерами или попросите подготовить пустой шаблон.</p></section>
       : <Note text={props.slide.note} />}
   </div>;
 }
@@ -1073,8 +1082,9 @@ function BoundarySlide(props: SlideViewProps) {
 
   if (phase === 0) return <div className="content-layout boundary-stack boundary-explain">
     <div className="boundary-body">
-      <p className="bridge-line">Можно ли использовать результат сразу после проверки фактов?</p>
-      <SlideHeading slide={props.slide} />
+      <SlideHeading slide={props.slide}>
+        <p className="bridge-line">Можно ли использовать результат сразу после проверки фактов?</p>
+      </SlideHeading>
       <div className="pair-legend"><b><i className="dot can" />ИИ может подготовить материал</b><b><i className="dot cannot" />Решение принимает сотрудник</b></div>
       <div className="pair-cards">{pairs.map((pair)=><article key={pair[0]}><p className="can">{pair[0]}</p><i aria-hidden="true">↓</i><p className="cannot">{pair[1]}</p></article>)}</div>
       <p className="autonomy-rule"><span aria-hidden="true">!</span><b>Чем серьёзнее последствия ошибки, тем больше решений и проверок выполняет сотрудник.</b></p>
@@ -1089,7 +1099,7 @@ function BoundarySlide(props: SlideViewProps) {
       const task = tasks[idx];
       return <article key={task[0]}><span>{idx + 1}</span><p>{task[0]}</p><div className="segmented">{boundaryKinds.map((kind)=>{const picked=answers[idx]===kind;const state=checked?(picked?(kind===task[1]?'correct':'wrong'):''):picked?'selected':'';return <button type="button" key={kind} disabled={checked} aria-pressed={picked} className={state} onClick={()=>setAnswers(v=>({...v,[idx]:kind}))}>{kind}</button>})}</div></article>;
     };
-    return <div className="content-layout boundary-stack paired-question">
+    return <div className="content-layout compact-content boundary-stack paired-question">
       <div className="boundary-body">
         <div className="slide-heading"><p className="eyebrow">Проверьте себя</p><h1>Что может подготовить ИИ, а что должен решить сотрудник?</h1><p className="slide-intro">Распределите четыре задачи. Для каждой выберите «Подготовка» или «Решение сотрудника».</p></div>
         <div className="paired-question-list">
@@ -1108,7 +1118,7 @@ function BoundarySlide(props: SlideViewProps) {
     </div>;
   }
 
-  if (phase === 2) return <div className="content-layout boundary-stack boundary-review">
+  if (phase === 2) return <div className="content-layout compact-content boundary-stack boundary-review">
     <div className="boundary-body">
       <div className="slide-heading"><p className="eyebrow">Разбор</p><h1>Почему эти задачи относятся к разным категориям</h1></div>
       <div className="boundary-review-pairs">
@@ -1139,7 +1149,8 @@ function BankUseSlide(props: SlideViewProps) {
 }
 
 function PromptCompareSlide(props: SlideViewProps) {
-  return <div className="content-layout"><SlideHeading slide={props.slide}/><p className="slide-intro">Оба запроса содержат одинаковые данные. Во втором дополнительно указаны формат результата, объём и ограничения.</p><div className="prompt-compare"><article><b>Запрос А</b><code>Напиши справку по этим данным. 2024 год: открыто вкладов 1240, с автопролонгацией 812, закрыто досрочно 428. 2025 год: открыто вкладов 1418, с автопролонгацией 967, закрыто досрочно 451.</code></article><article className="better"><b>Запрос Б</b><code><mark>Подготовь справку</mark> об изменении портфеля вкладов. 2024 год: открыто вкладов 1240, с автопролонгацией 812, закрыто досрочно 428. 2025 год: открыто вкладов 1418, с автопролонгацией 967, закрыто досрочно 451. <em>Формат: таблица и три коротких вывода.</em> <u>Рассчитай изменение каждого показателя относительно 2024 года. Не делай выводов о причинах.</u></code></article></div><div className="lesson-bottom"><Note text="Точный запрос помогает получить нужный результат быстрее. Когда в запросе заранее указаны формат и ограничения, ответ реже приходится переделывать."/><button className="primary-action" type="button" onClick={props.onOpenQuiz}>Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
+  return <div className="content-layout"><SlideHeading slide={props.slide}/><p className="slide-intro">Оба запроса содержат одинаковые данные. Во втором дополнительно указаны формат результата, объём и ограничения.</p><div className="prompt-compare"><article><b>Запрос А</b><code>Напиши справку по этим данным.<br/>2024 год: открыто вкладов 1240, с автопролонгацией 812, закрыто досрочно 428.<br/>2025 год: открыто вкладов 1418, с автопролонгацией 967, закрыто досрочно 451.</code></article><article className="better"><b>Запрос Б</b><code>Подготовь справку об изменении портфеля вкладов.<br/>
+    2024 год: открыто вкладов 1240, с автопролонгацией 812, закрыто досрочно 428.<br/>2025 год: открыто вкладов 1418, с автопролонгацией 967, закрыто досрочно 451.<br/><br/><mark>Верни таблицу со столбцами: «Показатель», «2024», «2025», «Изменение в штуках», «Изменение в %».</mark><br/><em>После таблицы сформулируй три кратких вывода о динамике. Не делай предположений о причинах изменений.</em></code></article></div><div className="lesson-bottom"><Note text="Точный запрос помогает получить нужный результат быстрее. Когда в запросе заранее указаны формат и ограничения, ответ реже приходится переделывать."/><button className="primary-action" type="button" onClick={props.onOpenQuiz}>Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
 }
 
 function ModelContextSlide(props: SlideViewProps) {
@@ -1457,21 +1468,21 @@ function DataZonesSlide(props: SlideViewProps) {
   };
   return <div className="content-layout compact-content zones-slide">
     <SlideHeading slide={props.slide}/>
-    <div className="traffic-zones wide"><span className="green">Зелёная<br/><small>можно использовать в разрешённом сервисе</small></span><span className="yellow">Жёлтая<br/><small>нельзя загружать до согласования</small></span><span className="red">Красная<br/><small>нельзя загружать во внешний сервис</small></span></div>
+    <div className="traffic-zones wide"><span className="green">Зелёная<br/><small>можно использовать в разрешённом сервисе</small></span><span className="yellow">Жёлтая<br/><small>сначала нужно получить согласование</small></span><span className="red">Красная<br/><small>нельзя передавать во внешний ИИ-сервис</small></span></div>
     {!done ? <section className="zone-practice">
-      <header><p>Материал {position + 1} из {cards.length}</p><div className="zone-progress"><span style={{ width: `${(position / cards.length) * 100}%` }} /></div></header>
+      <header><p>Пример {position + 1} из {cards.length}</p><div className="zone-progress"><span style={{ width: `${(position / cards.length) * 100}%` }} /></div></header>
       <h2>{card.text}</h2>
-      <p className="zone-instruction">Выберите зону этого материала.</p>
+      <p className="zone-instruction">К какой категории относятся эти данные?</p>
       <div className="zone-choices">{props.slide.categories?.map((category) => (
         <button type="button" key={category} disabled={Boolean(solved)}
           className={`zone-choice zone-${zoneOf(category)}${solved && card.category === category ? ' picked' : ''}`}
           onClick={() => assign(category)}>{category.split(' ')[0]}</button>
       ))}</div>
       {solved
-        ? <div className="zone-feedback correct"><b>Верно</b><p>{solved}</p><button className="primary-action" type="button" onClick={() => { setPosition((value) => value + 1); setSolved(''); setWrong(''); }}>{position === cards.length - 1 ? 'Завершить' : 'Следующий материал'}</button></div>
+        ? <div className="zone-feedback correct"><b>Верно</b><p>{solved}</p><button className="primary-action" type="button" onClick={() => { setPosition((value) => value + 1); setSolved(''); setWrong(''); }}>{position === cards.length - 1 ? 'Завершить' : 'Следующий пример'}</button></div>
         : wrong && <div className="zone-feedback wrong"><p>{wrong}</p></div>}
     </section>
-    : <section className="zone-complete"><b>{cards.length}/{cards.length}</b><h2>Все материалы разобраны</h2><p>Зелёный материал можно использовать только в разрешённом сервисе.</p></section>}
+    : <section className="zone-complete"><b>{cards.length}/{cards.length}</b><h2>Все примеры разобраны</h2><p>Зелёные данные — используйте только в разрешённых сервисах.</p><p>Жёлтые данные — сначала согласуйте передачу.</p><p>Красные данные — не передавайте во внешние ИИ-сервисы.</p><p>Если сомневаетесь — выбирайте жёлтую категорию.</p></section>}
     <Note text={props.slide.note}/>
   </div>;
 }
@@ -1840,7 +1851,7 @@ function CaseSlide(props: SlideViewProps) {
 
   const choice = props.chosen === null ? null : step.choices[props.chosen];
   return (
-    <div className="content-layout case-slide">
+    <div className="content-layout compact-content case-slide">
       <SlideHeading slide={{...props.slide, intro: undefined}} />
       <section className="case-situation"><b>Ситуация</b><p>{props.slide.intro}</p></section>
       <div className="case-route">{steps.map((_, idx) => <span key={idx} className={idx < props.caseStep ? 'done' : idx === props.caseStep ? 'active' : ''}>{idx + 1}</span>)}</div>
