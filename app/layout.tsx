@@ -7,18 +7,20 @@ const manrope = Manrope({
   subsets: ['cyrillic', 'latin'],
 });
 
+const isGitHubPages = process.env.GITHUB_PAGES === 'true';
+
 export const metadata: Metadata = {
   title: 'Как начать работать с ИИ',
   description: 'Интерактивный курс о безопасной и эффективной работе с искусственным интеллектом.',
   metadataBase: new URL(
-    process.env.GITHUB_PAGES === 'true'
+    isGitHubPages
       ? 'https://greenlacostaicq.github.io/presentation/'
       : 'http://137.74.169.62',
   ),
   openGraph: {
     title: 'Как начать работать с ИИ',
     description: 'Интерактивный курс Банка Синара: задачи, данные, запросы и проверка результата.',
-    images: ['/media/asset-sheet.png'],
+    images: [isGitHubPages ? '/presentation/media/asset-sheet.png' : '/media/asset-sheet.png'],
   },
 };
 

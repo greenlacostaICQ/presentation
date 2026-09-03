@@ -33,7 +33,7 @@ jobs:
           NEXT_PUBLIC_BASE_PATH: /presentation
       - name: Render static entry page
         run: |
-          PORT=3000 node dist/standalone/server.js &
+          GITHUB_PAGES=true PORT=3000 node dist/standalone/server.js &
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           for attempt in {1..20}; do
