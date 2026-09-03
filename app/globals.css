@@ -544,7 +544,7 @@ button:focus-visible, select:focus-visible, a:focus-visible {
 .review-rule { margin:0; color:var(--sinara-navy); font-size:14px; font-weight:750; }
 .bank-use-layout { display:grid;grid-template-columns:1.35fr .65fr;gap:22px }.bank-use-layout .question-card{padding:22px}.bank-use-layout .choice{min-height:48px;font-size:13px}.bank-use-layout .portrait-frame{min-height:360px}
 .prompt-compare { display:grid;grid-template-columns:1fr 1fr;gap:14px }.prompt-compare article{padding:18px;border-radius:16px;background:var(--sinara-navy);color:white}.prompt-compare article.better{background:#27465d}.prompt-compare b{display:block;margin-bottom:10px;color:#a8c5d8}.prompt-compare code{display:block;font-size:12px;line-height:1.6}.prompt-compare mark,.prompt-compare em,.prompt-compare u{padding:2px 3px;border-radius:4px;color:white;text-decoration:none;font-style:normal}.prompt-compare mark{background:#187a5c}.prompt-compare em{background:#1b6f9d}.prompt-compare u{background:#a81832}
-.knowledge-columns { display:grid;grid-template-columns:1fr 1fr;gap:14px }.knowledge-columns section{padding:22px;border-radius:18px;background:white}.knowledge-columns section:first-child{border-top:5px solid var(--success)}.knowledge-columns section:last-child{border-top:5px solid var(--danger)}.knowledge-columns h2{margin:0 0 10px;font-size:22px}.knowledge-columns p{margin:0;line-height:1.6;color:var(--muted)}
+.knowledge-columns { display:grid;grid-template-columns:1fr 1fr;gap:14px }.knowledge-columns section{padding:22px;border-radius:18px;background:white}.knowledge-columns section:first-child{border-top:5px solid var(--success)}.knowledge-columns section:last-child{border-top:5px solid var(--danger)}.knowledge-columns h2{margin:0 0 10px;font-size:22px}.knowledge-columns p{margin:0;line-height:1.6;color:var(--muted)}.knowledge-columns ul{margin:0;padding-left:20px;line-height:1.5;color:var(--muted);list-style:disc}.knowledge-columns li{margin-bottom:7px}.knowledge-columns li:last-child{margin-bottom:0}
 .memory-callout { display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;margin-top:12px;padding:14px 18px;border-radius:14px;background:#fff1f4}.memory-callout p{margin:0;font-size:13px;line-height:1.4}
 .refinement-steps { display:grid;grid-template-columns:repeat(4,1fr);gap:8px }.refinement-steps article{padding:15px;border-radius:14px;background:white}.refinement-steps span{display:grid;width:26px;height:26px;place-items:center;border-radius:50%;background:var(--sinara-red);color:white;font-size:11px;font-weight:800}.refinement-steps p{margin:10px 0 0;font-size:13px;line-height:1.35}.refinement-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.refinement-compare section{padding:13px 16px;border-radius:12px;background:#fff0f3}.refinement-compare section.good{background:#e9f7f1}.refinement-compare p{margin:4px 0 0;font-size:12px}
 .criteria-list { display:grid;grid-template-columns:repeat(5,1fr);gap:8px }.criteria-list article{padding:15px;border-radius:14px;background:white}.criteria-list span{color:var(--sinara-red);font-size:25px;font-weight:800}.criteria-list p{margin:8px 0 0;font-size:12px;line-height:1.4}
@@ -1672,6 +1672,9 @@ button:focus-visible, select:focus-visible, a:focus-visible {
 
   /* 15 · что модель знает: две колонки и вынос кнопки в строку */
   .knowledge-columns { grid-template-columns: 1fr; gap: 10px; }
+  .knowledge-columns section { padding: 14px 16px; }
+  .knowledge-columns ul { padding-left: 18px; }
+  .knowledge-columns li { margin-bottom: 4px; }
   .memory-callout { grid-template-columns: 1fr; gap: 10px; }
   .memory-callout .primary-action { width: 100%; }
 
