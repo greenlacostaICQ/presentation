@@ -1,7 +1,7 @@
 # Как начать работать с ИИ
 
 Интерактивный учебный курс Банка Синара. Продакшен доступен по адресу
-<http://137.74.169.62:8080>.
+<http://137.74.169.62>.
 
 ## Локальный запуск
 
@@ -33,6 +33,14 @@ sudo docker run -d \
   --restart unless-stopped \
   -p 8080:3000 \
   interactive-presentation-course:latest
+
+sudo docker rm -f presentation-proxy || true
+sudo docker run -d \
+  --name presentation-proxy \
+  --restart unless-stopped \
+  --network host \
+  -v /home/debian/interactive-presentation/deploy/nginx.conf:/etc/nginx/nginx.conf:ro \
+  nginx:alpine
 ```
 
 В репозитории хранятся только исходники и используемые медиа. Зависимости,

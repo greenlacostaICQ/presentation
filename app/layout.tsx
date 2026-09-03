@@ -10,7 +10,7 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: 'Как начать работать с ИИ',
   description: 'Интерактивный курс о безопасной и эффективной работе с искусственным интеллектом.',
-  metadataBase: new URL('http://137.74.169.62:8080'),
+  metadataBase: new URL('http://137.74.169.62'),
   openGraph: {
     title: 'Как начать работать с ИИ',
     description: 'Интерактивный курс Банка Синара: задачи, данные, запросы и проверка результата.',
