@@ -1144,7 +1144,8 @@ function BankUseSlide(props: SlideViewProps) {
 }
 
 function PromptCompareSlide(props: SlideViewProps) {
-  return <div className="content-layout"><SlideHeading slide={props.slide}/><p className="slide-intro">Оба запроса содержат одинаковые данные. Во втором дополнительно указаны формат результата, объём и ограничения.</p><div className="prompt-compare"><article><b>Запрос А</b><code>Напиши справку по этим данным. 2024 год: открыто вкладов 1240, с автопролонгацией 812, закрыто досрочно 428. 2025 год: открыто вкладов 1418, с автопролонгацией 967, закрыто досрочно 451.</code></article><article className="better"><b>Запрос Б</b><code><mark>Подготовь справку</mark> об изменении портфеля вкладов. 2024 год: открыто вкладов 1240, с автопролонгацией 812, закрыто досрочно 428. 2025 год: открыто вкладов 1418, с автопролонгацией 967, закрыто досрочно 451. <em>Формат: таблица и три коротких вывода.</em> <u>Рассчитай изменение каждого показателя относительно 2024 года. Не делай выводов о причинах.</u></code></article></div><div className="lesson-bottom"><Note text="Точный запрос помогает получить нужный результат быстрее. Когда в запросе заранее указаны формат и ограничения, ответ реже приходится переделывать."/><button className="primary-action" type="button" onClick={props.onOpenQuiz}>Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
+  return <div className="content-layout"><SlideHeading slide={props.slide}/><p className="slide-intro">Оба запроса содержат одинаковые данные. Во втором дополнительно указаны формат результата, объём и ограничения.</p><div className="prompt-compare"><article><b>Запрос А</b><code>Напиши справку по этим данным.<br/>2024 год: открыто вкладов 1240, с автопролонгацией 812, закрыто досрочно 428.<br/>2025 год: открыто вкладов 1418, с автопролонгацией 967, закрыто досрочно 451.</code></article><article className="better"><b>Запрос Б</b><code>Подготовь справку об изменении портфеля вкладов.<br/>
+    2024 год: открыто вкладов 1240, с автопролонгацией 812, закрыто досрочно 428.<br/>2025 год: открыто вкладов 1418, с автопролонгацией 967, закрыто досрочно 451.<br/><br/><mark>Верни таблицу со столбцами: «Показатель», «2024», «2025», «Изменение в штуках», «Изменение в %».</mark><br/><em>После таблицы сформулируй три кратких вывода о динамике. Не делай предположений о причинах изменений.</em></code></article></div><div className="lesson-bottom"><Note text="Точный запрос помогает получить нужный результат быстрее. Когда в запросе заранее указаны формат и ограничения, ответ реже приходится переделывать."/><button className="primary-action" type="button" onClick={props.onOpenQuiz}>Проверить себя</button></div>{props.quizOpen&&<QuestionPopup props={props}/>}</div>;
 }
 
 function ModelContextSlide(props: SlideViewProps) {
@@ -1464,7 +1465,7 @@ function DataZonesSlide(props: SlideViewProps) {
     <SlideHeading slide={props.slide}/>
     <div className="traffic-zones wide"><span className="green">Зелёная<br/><small>можно использовать в разрешённом сервисе</small></span><span className="yellow">Жёлтая<br/><small>сначала нужно получить согласование</small></span><span className="red">Красная<br/><small>нельзя передавать во внешний ИИ-сервис</small></span></div>
     {!done ? <section className="zone-practice">
-      <header><p>Материал {position + 1} из {cards.length}</p><div className="zone-progress"><span style={{ width: `${(position / cards.length) * 100}%` }} /></div></header>
+      <header><p>Пример {position + 1} из {cards.length}</p><div className="zone-progress"><span style={{ width: `${(position / cards.length) * 100}%` }} /></div></header>
       <h2>{card.text}</h2>
       <p className="zone-instruction">К какой категории относятся эти данные?</p>
       <div className="zone-choices">{props.slide.categories?.map((category) => (
@@ -1473,7 +1474,7 @@ function DataZonesSlide(props: SlideViewProps) {
           onClick={() => assign(category)}>{category.split(' ')[0]}</button>
       ))}</div>
       {solved
-        ? <div className="zone-feedback correct"><b>Верно</b><p>{solved}</p><button className="primary-action" type="button" onClick={() => { setPosition((value) => value + 1); setSolved(''); setWrong(''); }}>{position === cards.length - 1 ? 'Завершить' : 'Следующий материал'}</button></div>
+        ? <div className="zone-feedback correct"><b>Верно</b><p>{solved}</p><button className="primary-action" type="button" onClick={() => { setPosition((value) => value + 1); setSolved(''); setWrong(''); }}>{position === cards.length - 1 ? 'Завершить' : 'Следующий пример'}</button></div>
         : wrong && <div className="zone-feedback wrong"><p>{wrong}</p></div>}
     </section>
     : <section className="zone-complete"><b>{cards.length}/{cards.length}</b><h2>Все примеры разобраны</h2><p>Зелёные данные — используйте только в разрешённых сервисах.</p><p>Жёлтые данные — сначала согласуйте передачу.</p><p>Красные данные — не передавайте во внешние ИИ-сервисы.</p><p>Если сомневаетесь — выбирайте жёлтую категорию.</p></section>}
