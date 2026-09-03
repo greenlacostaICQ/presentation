@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Как начать работать с ИИ',
     description: 'Интерактивный курс Банка Синара: задачи, данные, запросы и проверка результата.',
-    images: [isGitHubPages ? '/presentation/media/asset-sheet.png' : '/media/asset-sheet.png'],
+    images: ['/media/asset-sheet.png'],
   },
 };
 
