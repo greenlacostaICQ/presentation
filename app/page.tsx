@@ -1476,7 +1476,7 @@ function DataZonesSlide(props: SlideViewProps) {
         ? <div className="zone-feedback correct"><b>Верно</b><p>{solved}</p><button className="primary-action" type="button" onClick={() => { setPosition((value) => value + 1); setSolved(''); setWrong(''); }}>{position === cards.length - 1 ? 'Завершить' : 'Следующий материал'}</button></div>
         : wrong && <div className="zone-feedback wrong"><p>{wrong}</p></div>}
     </section>
-    : <section className="zone-complete"><b>{cards.length}/{cards.length}</b><h2>Все материалы разобраны</h2><p>Зелёный материал можно использовать только в разрешённом сервисе.</p></section>}
+    : <section className="zone-complete"><b>{cards.length}/{cards.length}</b><h2>Все примеры разобраны</h2><p>Зелёные данные — используйте только в разрешённых сервисах.</p><p>Жёлтые данные — сначала согласуйте передачу.</p><p>Красные данные — не передавайте во внешние ИИ-сервисы.</p><p>Если сомневаетесь — выбирайте жёлтую категорию.</p></section>}
     <Note text={props.slide.note}/>
   </div>;
 }
